@@ -7,7 +7,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.works (
   id uuid primary key default gen_random_uuid(),
   title text not null,
-  category text not null default 'photo' check (category in ('photo', 'illustration', 'video', 'painting')),
+  category text not null default 'photo' check (category in ('photo', 'illustration', 'video', 'painting', 'ai_image', 'ai_video')),
   price integer not null default 0 check (price >= 0),
   license text not null default 'standard' check (license in ('standard', 'extended', 'exclusive')),
   tags text[] not null default '{}',
@@ -33,6 +33,10 @@ alter table public.works add column if not exists media_type text not null defau
 alter table public.works add column if not exists media_url text not null default 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=1000&q=82';
 alter table public.works add column if not exists downloads integer not null default 0;
 alter table public.works add column if not exists created_at timestamptz not null default now();
+
+alter table public.works drop constraint if exists works_category_check;
+alter table public.works add constraint works_category_check
+  check (category in ('photo', 'illustration', 'video', 'painting', 'ai_image', 'ai_video'));
 
 create index if not exists works_created_at_idx on public.works (created_at desc);
 create index if not exists works_category_idx on public.works (category);

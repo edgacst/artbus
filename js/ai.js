@@ -1,4 +1,29 @@
 const $ = (selector) => document.querySelector(selector);
+let revealObserver = null;
+
+function setupRevealAnimations(root = document) {
+  const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = root.querySelectorAll('h1, h2, h3, .eyebrow, .ai-hero-copy p, .ai-panel, .ai-output, .ai-card-grid article, .site-footer > *');
+  targets.forEach((el, index) => {
+    if (el.classList.contains('reveal-text') || el.classList.contains('reveal-item')) return;
+    el.classList.add(el.matches('.ai-panel, .ai-output, .ai-card-grid article') ? 'reveal-item' : 'reveal-text');
+    el.style.setProperty('--reveal-delay', `${Math.min(index % 8, 7) * 45}ms`);
+    if (motionReduced) el.classList.add('is-visible');
+  });
+
+  if (motionReduced) return;
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  }
+
+  root.querySelectorAll('.reveal-text:not(.is-visible), .reveal-item:not(.is-visible)').forEach((el) => revealObserver.observe(el));
+}
 
 function selectedStyle() {
   return document.querySelector('input[name="style"]:checked')?.value || '';
@@ -111,4 +136,5 @@ function bindEvents() {
 document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
   makePrompt();
+  setupRevealAnimations();
 });

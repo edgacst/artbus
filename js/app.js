@@ -9,6 +9,8 @@ const CATEGORY_LABELS = {
   video: '영상',
   illustration: '일러스트',
   painting: '파인아트',
+  ai_image: 'AI 이미지',
+  ai_video: 'AI 영상',
 };
 
 const LICENSE_LABELS = {
@@ -76,6 +78,12 @@ const EXTRA_SAMPLE_ASSETS = [
   ['모던 갤러리 월아트', 'painting', 56000, 'exclusive', ['갤러리', '월아트', '프리미엄'], 'Gallery One', 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=1000&q=82', 1320],
   ['코랄 컬러 필드', 'painting', 34000, 'standard', ['코랄', '컬러필드', '배경'], 'Color House', 'https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=1000&q=82', 1210],
   ['잉크 플로우 아트', 'painting', 39000, 'extended', ['잉크', '흐름', '패키지'], 'Ink Room', 'https://images.unsplash.com/photo-1604871000636-074fa5117945?w=1000&q=82', 1090],
+  ['AI 뷰티 캠페인', 'ai_image', 29000, 'extended', ['AI', '뷰티', '광고'], 'ArtBus AI Lab', 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1000&q=82', 2420],
+  ['AI 커머스 제품컷', 'ai_image', 26000, 'standard', ['AI', '제품', '커머스'], 'ArtBus AI Lab', 'https://images.unsplash.com/photo-1682685797365-41f45b562c0a?w=1000&q=82', 2210],
+  ['AI 브랜드 키비주얼', 'ai_image', 38000, 'extended', ['AI', '브랜드', '키비주얼'], 'Prompt Studio', 'https://images.unsplash.com/photo-1675271591211-126ad94e495d?w=1000&q=82', 1980],
+  ['AI 숏폼 모션 배경', 'ai_video', 43000, 'extended', ['AI', '쇼츠', '모션'], 'Prompt Studio', 'https://images.unsplash.com/photo-1639322537228-f710d846310a?w=1000&q=82', 1860],
+  ['AI 제품 티저 루프', 'ai_video', 52000, 'exclusive', ['AI', '티저', '루프'], 'ArtBus AI Lab', 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1000&q=82', 1740],
+  ['AI 시네마틱 무드', 'ai_video', 48000, 'extended', ['AI', '시네마틱', '배경'], 'Future Frame', 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=1000&q=82', 1630],
 ].map((item, index) => ({
   id: `extra-${index + 1}`,
   title: item[0],
@@ -115,6 +123,36 @@ const state = {
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 const ALL_SAMPLE_ASSETS = [...SAMPLE_ASSETS, ...EXTRA_SAMPLE_ASSETS];
+let revealObserver = null;
+
+function setupRevealAnimations(root = document) {
+  const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const textTargets = root.querySelectorAll('h1, h2, h3, .lead, .eyebrow, .section-copy, .muted, .hero-kpis div, .metric-grid div, .license-grid article, .site-footer > *');
+  const itemTargets = root.querySelectorAll('.collection-card, .asset-card, .market-category-head, .category-strip button');
+  const itemSet = new Set([...itemTargets]);
+
+  [...textTargets, ...itemTargets].forEach((el, index) => {
+    if (el.classList.contains('reveal-text') || el.classList.contains('reveal-item')) return;
+    el.classList.add(itemSet.has(el) ? 'reveal-item' : 'reveal-text');
+    el.style.setProperty('--reveal-delay', `${Math.min(index % 8, 7) * 45}ms`);
+    if (motionReduced) el.classList.add('is-visible');
+  });
+
+  if (motionReduced) return;
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  }
+
+  root.querySelectorAll('.reveal-text:not(.is-visible), .reveal-item:not(.is-visible)').forEach((el) => {
+    revealObserver.observe(el);
+  });
+}
 
 function money(value) {
   return `${Number(value || 0).toLocaleString('ko-KR')}원`;
@@ -224,7 +262,6 @@ async function connectSupabase() {
     state.assets = data.length ? [...data.map(normalizeRow), ...ALL_SAMPLE_ASSETS] : [...ALL_SAMPLE_ASSETS];
     state.source = 'supabase';
     setDbStatus(data.length ? '라이브 DB 연결' : 'DB 연결됨, 샘플 표시', data.length ? 'live' : 'warn');
-    $('#uploadMode').textContent = state.client ? 'DB 저장 가능' : '목록만 DB 연결';
     $('#uploadNote').textContent = state.client ? '이미지와 동영상은 Storage에 저장됩니다.' : '업로드는 Supabase SDK 로드 후 사용할 수 있습니다.';
     renderAuthState();
     return true;
@@ -232,7 +269,6 @@ async function connectSupabase() {
     state.assets = [...ALL_SAMPLE_ASSETS];
     state.source = 'sample';
     setDbStatus('샘플 데이터', 'error');
-    $('#uploadMode').textContent = '샘플 모드';
     $('#uploadNote').textContent = 'DB 연결 실패 시 샘플 데이터가 표시됩니다.';
     console.warn('Supabase not ready:', error.message);
     return false;
@@ -475,9 +511,22 @@ function renderAssets() {
       kicker: 'Category 04',
       assets: list.filter((asset) => asset.category === 'painting'),
     },
+    {
+      key: 'ai_image',
+      title: 'AI 이미지',
+      kicker: 'Category 05',
+      assets: list.filter((asset) => asset.category === 'ai_image'),
+    },
+    {
+      key: 'ai_video',
+      title: 'AI 영상',
+      kicker: 'Category 06',
+      assets: list.filter((asset) => asset.category === 'ai_video'),
+    },
   ].filter((group) => group.assets.length > 0);
 
   $('#assetGrid').innerHTML = groups.map(categoryGroupMarkup).join('');
+  setupRevealAnimations($('#assetGrid'));
 
   $$('[data-expand-group]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -849,6 +898,7 @@ async function init() {
   renderCategoryChips();
   bindEvents();
   renderAssets();
+  setupRevealAnimations();
   await connectSupabase();
   renderAssets();
 }

@@ -53,6 +53,8 @@
             <option value="video">영상</option>
             <option value="illustration">일러스트</option>
             <option value="painting">파인아트</option>
+            <option value="ai_image">AI 이미지</option>
+            <option value="ai_video">AI 영상</option>
           </select>
           <input id="heroSearch" type="search" placeholder="예: 제품 촬영, 서울 야경, 쇼츠 배경, 수채화">
           <button class="solid-btn" type="submit">검색</button>
@@ -82,6 +84,8 @@
       <button type="button" data-jump-category="video"><strong>동영상</strong><span>쇼츠, 릴스, 캠페인</span></button>
       <button type="button" data-jump-category="illustration"><strong>일러스트</strong><span>포스터, 벡터, 그래픽</span></button>
       <button type="button" data-jump-category="painting"><strong>파인아트</strong><span>공간, 브랜드 무드</span></button>
+      <button type="button" data-jump-category="ai_image"><strong>AI 이미지</strong><span>프롬프트 기반 비주얼</span></button>
+      <button type="button" data-jump-category="ai_video"><strong>AI 영상</strong><span>모션, 루프, 숏폼</span></button>
     </section>
 
     <!-- SECTION 03: Curated editorial sets -->
@@ -161,7 +165,6 @@
       </div>
       <div class="creator-actions">
         <button class="solid-btn" id="creatorUploadBtn" type="button">콘텐츠 등록하기</button>
-        <span id="uploadMode">연결 확인 중</span>
       </div>
     </section>
 
@@ -189,7 +192,7 @@
       </div>
       <label>제목<input id="workTitle" required placeholder="예: 서울 야경 배경 영상"></label>
       <div class="form-row">
-        <label>카테고리<select id="workCategory"><option value="photo">사진</option><option value="video">영상</option><option value="illustration">일러스트</option><option value="painting">파인아트</option></select></label>
+        <label>카테고리<select id="workCategory"><option value="photo">사진</option><option value="video">영상</option><option value="illustration">일러스트</option><option value="painting">파인아트</option><option value="ai_image">AI 이미지</option><option value="ai_video">AI 영상</option></select></label>
         <label>라이선스<select id="workLicense"><option value="standard">Standard</option><option value="extended">Extended</option><option value="exclusive">Exclusive</option></select></label>
       </div>
       <div class="form-row">
@@ -240,6 +243,29 @@
       <p class="auth-note" id="authNote">Google 로그인과 이메일 로그인을 지원합니다.</p>
     </div>
   </dialog>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <a class="footer-logo" href="index.html" aria-label="ArtBus 홈">
+        <span class="footer-mark">A</span>
+        <strong>ArtBus</strong>
+      </a>
+      <p>주식회사 아트버스마켓<br>사업자번호 : 634-81-02760<br>대표이사 김기철<br>온라인음악서비스 제2026-000001호</p>
+    </div>
+    <nav class="footer-links" aria-label="바로가기">
+      <strong>바로가기</strong>
+      <a href="#">이용약관</a>
+      <a href="#">개인정보처리방침</a>
+      <a href="#">환불 정책</a>
+      <a href="#">이용안내</a>
+    </nav>
+    <div class="footer-contact">
+      <strong>고객센터</strong>
+      <a href="#">FAQ</a>
+      <a href="mailto:freecompr@naver.com">freecompr@naver.com</a>
+      <p>프로그램개발, api개발, 커스터마이징, 컴퓨터프로그램 개발 문의 010-8447-9973<br>경기도 부천시 상동457 제 2026-부천원미-0446 호</p>
+    </div>
+  </footer>
 
   <div class="toast" id="toast"></div>
 
