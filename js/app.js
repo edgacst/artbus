@@ -617,13 +617,41 @@ function safeFileName(name) {
   return name.toLowerCase().replace(/[^a-z0-9.]+/g, '-').replace(/^-+|-+$/g, '') || 'upload';
 }
 
+function extensionFromFile(file, mediaType) {
+  const extensionByMime = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'video/mp4': 'mp4',
+    'video/webm': 'webm',
+    'video/quicktime': 'mov',
+  };
+
+  const fromMime = extensionByMime[file.type];
+  if (fromMime) return fromMime;
+
+  const safeName = safeFileName(file.name || '');
+  const match = safeName.match(/\.([a-z0-9]+)$/);
+  if (match) return match[1];
+
+  return mediaType === 'video' ? 'mp4' : 'jpg';
+}
+
+function contentTypeFromFile(file, mediaType) {
+  if (file.type) return file.type;
+  return mediaType === 'video' ? 'video/mp4' : 'image/jpeg';
+}
+
 async function uploadMediaFile(file) {
   if (!file) return { url: FALLBACK_UPLOAD_IMAGE, type: 'image' };
   const mediaType = file.type?.startsWith('video/') ? 'video' : 'image';
-  const ext = safeFileName(file.name).split('.').pop() || (mediaType === 'video' ? 'mp4' : 'jpg');
+  const ext = extensionFromFile(file, mediaType);
+  const contentType = contentTypeFromFile(file, mediaType);
   const path = `${state.user.id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
   const { error } = await state.client.storage.from(STORAGE_BUCKET).upload(path, file, {
     cacheControl: '3600',
+    contentType,
     upsert: false,
   });
   if (error) throw error;
