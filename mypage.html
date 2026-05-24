@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ArtBus 마이페이지 - 내가 등록한 콘텐츠 관리">
+  <title>마이페이지 | ArtBus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=20260523-9">
+</head>
+<body class="mypage-body">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="ArtBus 홈">
+      <span class="brand-mark">A</span>
+      <span>ArtBus</span>
+    </a>
+    <nav class="nav">
+      <a href="index.html#market">콘텐츠</a>
+      <a href="index.html#collections">추천기획</a>
+      <a href="index.html#creator">판매자센터</a>
+      <a href="ai.html">AI Studio</a>
+      <a href="mypage.html">마이페이지</a>
+    </nav>
+    <div class="top-actions">
+      <button class="ghost-btn" id="authBtn" type="button">로그인</button>
+      <a class="solid-btn header-link" href="index.html">홈으로</a>
+    </div>
+  </header>
+
+  <main class="mypage-shell">
+    <section class="mypage-hero">
+      <div>
+        <p class="eyebrow">My Studio</p>
+        <h1>내 콘텐츠 관리</h1>
+        <p>내가 등록한 이미지와 동영상을 확인하고, 필요 없는 파일을 삭제할 수 있습니다.</p>
+      </div>
+      <a class="solid-btn header-link" href="index.html#creator">콘텐츠 등록</a>
+    </section>
+
+    <section class="mypage-login" id="loginPrompt">
+      <h2>로그인이 필요합니다</h2>
+      <p>Google 또는 이메일로 로그인하면 내가 등록한 콘텐츠를 관리할 수 있습니다.</p>
+      <a class="solid-btn header-link" id="googleLoginLink" href="#">Google로 로그인</a>
+    </section>
+
+    <section class="mypage-dashboard" id="mypageContent" hidden>
+      <aside class="profile-panel">
+        <div class="profile-avatar" id="profileAvatar">A</div>
+        <h2 id="profileName">내 계정</h2>
+        <p id="profileEmail"></p>
+        <button class="ghost-btn full" id="logoutBtn" type="button">로그아웃</button>
+      </aside>
+
+      <div class="my-content-area">
+        <div class="stats-grid">
+          <article><span>등록 콘텐츠</span><strong id="totalCount">0</strong></article>
+          <article><span>이미지</span><strong id="imageCount">0</strong></article>
+          <article><span>동영상</span><strong id="videoCount">0</strong></article>
+          <article><span>총 가격</span><strong id="totalPrice">0원</strong></article>
+        </div>
+
+        <div class="my-list-head">
+          <div>
+            <p class="eyebrow">Uploads</p>
+            <h2>내가 올린 파일</h2>
+          </div>
+          <button class="ghost-btn" id="refreshBtn" type="button">새로고침</button>
+        </div>
+        <div class="my-work-grid" id="myWorksGrid"></div>
+        <p class="empty" id="emptyWorks" hidden>아직 등록한 콘텐츠가 없습니다.</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js?v=20260523-9"></script>
+  <script src="js/mypage.js?v=20260523-1"></script>
+</body>
+</html>

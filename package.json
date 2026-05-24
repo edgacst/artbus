@@ -1,0 +1,17 @@
+{
+  "name": "artbus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Premium visual licensing marketplace built with vanilla HTML, CSS, JavaScript, and optional Supabase.",
+  "scripts": {
+    "start": "node static-server.js",
+    "dev": "node static-server.js",
+    "check": "node --check static-server.js && node --check js/app.js && node --check js/config.js"
+  },
+  "keywords": [
+    "marketplace",
+    "supabase",
+    "creative-assets",
+    "licensing"
+  ]
+}

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ArtBus AI Studio - 마켓에 올릴 비주얼 콘셉트와 프롬프트를 빠르게 설계하는 페이지">
+  <title>AI Studio | ArtBus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=20260523-9">
+  <link rel="stylesheet" href="css/ai.css?v=20260524-1">
+</head>
+<body class="ai-body">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="ArtBus 홈">
+      <span class="brand-mark">A</span>
+      <span>ArtBus</span>
+    </a>
+    <nav class="nav">
+      <a href="index.html#market">콘텐츠</a>
+      <a href="index.html#collections">추천기획</a>
+      <a href="index.html#creator">판매자센터</a>
+      <a href="ai.html">AI Studio</a>
+      <a href="mypage.html">마이페이지</a>
+    </nav>
+    <div class="top-actions">
+      <a class="ghost-btn header-link" href="mypage.html">내 작업</a>
+      <a class="solid-btn header-link" href="index.html#creator">업로드</a>
+    </div>
+  </header>
+
+  <main class="ai-shell">
+    <section class="ai-hero">
+      <div class="ai-hero-copy">
+        <p class="eyebrow">AI Studio</p>
+        <h1>판매 가능한 비주얼 아이디어를 빠르게 설계하세요</h1>
+        <p>키워드, 업종, 스타일을 고르면 ArtBus 마켓에 올릴 이미지/영상 콘셉트와 프롬프트, 라이선스 추천까지 한 번에 정리합니다.</p>
+      </div>
+      <div class="ai-preview" aria-label="AI 비주얼 미리보기">
+        <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=84" alt="AI 생성형 비주얼 작업 화면">
+      </div>
+    </section>
+
+    <section class="ai-workspace" aria-label="AI 프롬프트 제작 도구">
+      <form class="ai-panel" id="promptForm">
+        <div class="panel-title">
+          <p class="eyebrow">Prompt Builder</p>
+          <h2>콘셉트 입력</h2>
+        </div>
+
+        <label>
+          주제
+          <input id="subjectInput" type="text" value="프리미엄 친환경 화장품 광고 이미지" placeholder="예: 서울 야경 배경의 전기차 광고">
+        </label>
+
+        <div class="ai-field-grid">
+          <label>
+            업종
+            <select id="industrySelect">
+              <option value="브랜드 광고">브랜드 광고</option>
+              <option value="커머스 상세페이지">커머스 상세페이지</option>
+              <option value="SNS 캠페인">SNS 캠페인</option>
+              <option value="공간/인테리어">공간/인테리어</option>
+            </select>
+          </label>
+          <label>
+            결과물
+            <select id="formatSelect">
+              <option value="정사각형 이미지">정사각형 이미지</option>
+              <option value="와이드 배너">와이드 배너</option>
+              <option value="세로형 숏폼 썸네일">세로형 숏폼 썸네일</option>
+              <option value="영상 콘티">영상 콘티</option>
+            </select>
+          </label>
+        </div>
+
+        <fieldset class="segmented" aria-label="스타일 선택">
+          <legend>스타일</legend>
+          <label><input type="radio" name="style" value="미니멀하고 고급스러운 스튜디오 조명" checked><span>미니멀</span></label>
+          <label><input type="radio" name="style" value="강한 대비와 선명한 컬러의 캠페인 룩"><span>선명한 광고</span></label>
+          <label><input type="radio" name="style" value="따뜻한 자연광과 현실적인 라이프스타일 무드"><span>라이프스타일</span></label>
+        </fieldset>
+
+        <label>
+          포함할 키워드
+          <input id="keywordInput" type="text" value="친환경, 유리병, 깨끗한 배경, 프리미엄 패키지" placeholder="쉼표로 구분">
+        </label>
+
+        <button class="solid-btn full" type="submit">프롬프트 생성</button>
+      </form>
+
+      <section class="ai-output" aria-label="생성 결과">
+        <div class="panel-title">
+          <p class="eyebrow">Generated Brief</p>
+          <h2>판매용 제작 브리프</h2>
+        </div>
+        <div class="output-block">
+          <span>추천 프롬프트</span>
+          <p id="promptOutput"></p>
+        </div>
+        <div class="output-grid">
+          <article>
+            <span>추천 카테고리</span>
+            <strong id="categoryOutput">이미지</strong>
+          </article>
+          <article>
+            <span>라이선스</span>
+            <strong id="licenseOutput">Extended</strong>
+          </article>
+          <article>
+            <span>권장 가격</span>
+            <strong id="priceOutput">25,000원</strong>
+          </article>
+        </div>
+        <button class="ghost-btn full" id="copyPromptBtn" type="button">프롬프트 복사</button>
+      </section>
+    </section>
+
+    <section class="ai-gallery" aria-label="AI 제작 예시">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Sample Directions</p>
+          <h2>마켓에 어울리는 AI 제작 방향</h2>
+        </div>
+      </div>
+      <div class="ai-card-grid">
+        <article>
+          <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=82" alt="제품 광고 이미지">
+          <strong>제품 상세컷</strong>
+          <span>깨끗한 배경, 상업용 조명, 패키지 중심 구도</span>
+        </article>
+        <article>
+          <img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=900&q=82" alt="공간 비주얼">
+          <strong>브랜드 무드컷</strong>
+          <span>캠페인 키비주얼, 공간감, 컬러 팔레트 강조</span>
+        </article>
+        <article>
+          <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=900&q=82" alt="추상 그래픽">
+          <strong>그래픽 리소스</strong>
+          <span>배너, UI 배경, 추상 패턴과 텍스처</span>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="js/ai.js?v=20260524-1"></script>
+</body>
+</html>

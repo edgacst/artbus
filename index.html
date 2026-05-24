@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ArtBus - 사진, 영상, 일러스트, 디자인 소스를 거래하는 비주얼 라이선스 마켓">
+  <title>ArtBus | 비주얼 라이선스 마켓</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=20260523-9">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="ArtBus 홈">
+      <span class="brand-mark">A</span>
+      <span>ArtBus</span>
+    </a>
+    <nav class="nav">
+      <a href="#market">콘텐츠</a>
+      <a href="#collections">추천기획</a>
+      <a href="#creator">판매자센터</a>
+      <a href="ai.html">AI Studio</a>
+      <a href="#license">라이선스</a>
+      <a href="mypage.html">마이페이지</a>
+    </nav>
+    <div class="top-actions">
+      <button class="ghost-btn" id="authBtn" type="button">로그인</button>
+      <a class="ghost-btn header-link" href="mypage.html">마이페이지</a>
+      <button class="solid-btn" id="openUploadBtn" type="button">콘텐츠 등록</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- SECTION 01: Search-focused commercial hero -->
+    <section class="hero">
+      <span class="section-index">01 Hero</span>
+      <div class="hero-video-bg" aria-hidden="true">
+        <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata">
+          <source src="https://videos.pexels.com/video-files/854100/854100-hd_1920_1080_25fps.mp4" type="video/mp4">
+        </video>
+        <div class="motion-layer layer-a"></div>
+        <div class="motion-layer layer-b"></div>
+        <div class="motion-layer layer-c"></div>
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow">Visual License Marketplace</p>
+        <h1>광고와 콘텐츠 제작에 바로 쓰는 국내형 비주얼 소스</h1>
+        <p class="lead">사진, 영상, 일러스트, 디자인 소스를 검색하고 라이선스 범위와 가격을 한 화면에서 비교하세요.</p>
+        <form class="search-panel" id="heroSearchForm">
+          <select id="heroCategory" aria-label="카테고리">
+            <option value="all">전체</option>
+            <option value="photo">사진</option>
+            <option value="video">영상</option>
+            <option value="illustration">일러스트</option>
+            <option value="painting">파인아트</option>
+          </select>
+          <input id="heroSearch" type="search" placeholder="예: 제품 촬영, 서울 야경, 쇼츠 배경, 수채화">
+          <button class="solid-btn" type="submit">검색</button>
+        </form>
+        <div class="quick-tags" id="quickTags"></div>
+        <div class="hero-kpis">
+          <div><strong id="heroAssetCount">0</strong><span>등록 콘텐츠</span></div>
+          <div><strong>3</strong><span>라이선스 등급</span></div>
+          <div><strong>100MB</strong><span>영상 업로드</span></div>
+        </div>
+      </div>
+      <div class="hero-board" aria-label="추천 콘텐츠 미리보기">
+        <div class="hero-tile tile-large"></div>
+        <div class="hero-tile tile-video"></div>
+        <div class="hero-tile tile-art"></div>
+        <div class="hero-stat">
+          <strong>Creator</strong>
+          <span>판매자가 직접 등록하고 관리하는 마켓</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 02: Quick category navigation -->
+    <section class="category-strip" aria-label="주요 카테고리">
+      <span class="section-index">02 Categories</span>
+      <button type="button" data-jump-category="photo"><strong>사진/이미지</strong><span>광고, 상세페이지, SNS</span></button>
+      <button type="button" data-jump-category="video"><strong>동영상</strong><span>쇼츠, 릴스, 캠페인</span></button>
+      <button type="button" data-jump-category="illustration"><strong>일러스트</strong><span>포스터, 벡터, 그래픽</span></button>
+      <button type="button" data-jump-category="painting"><strong>파인아트</strong><span>공간, 브랜드 무드</span></button>
+    </section>
+
+    <!-- SECTION 03: Curated editorial sets -->
+    <section class="section" id="collections">
+      <span class="section-index">03 Collections</span>
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Editorial Sets</p>
+          <h2>제작 목적별 추천 컬렉션</h2>
+        </div>
+      </div>
+      <div class="collection-grid" id="collectionGrid"></div>
+    </section>
+
+    <!-- SECTION 04: Dense marketplace -->
+    <section class="section market-section" id="market">
+      <span class="section-index">04 Marketplace</span>
+      <div class="section-head market-head">
+        <div>
+          <p class="eyebrow">Marketplace</p>
+          <h2>콘텐츠 마켓</h2>
+        </div>
+        <button class="ghost-btn" id="resetFiltersBtn" type="button">필터 초기화</button>
+      </div>
+      <div class="market-layout">
+        <aside class="filters">
+          <div class="filter-group">
+            <label for="searchInput">검색어</label>
+            <input id="searchInput" type="search" placeholder="제목, 작가, 태그">
+          </div>
+          <div class="filter-group">
+            <label>카테고리</label>
+            <div class="chip-row" id="categoryChips"></div>
+          </div>
+          <div class="filter-group">
+            <label for="licenseFilter">라이선스</label>
+            <select id="licenseFilter">
+              <option value="all">전체</option>
+              <option value="standard">Standard</option>
+              <option value="extended">Extended</option>
+              <option value="exclusive">Exclusive</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="sortSelect">정렬</label>
+            <select id="sortSelect">
+              <option value="newest">최신순</option>
+              <option value="popular">인기순</option>
+              <option value="price-low">낮은 가격순</option>
+              <option value="price-high">높은 가격순</option>
+            </select>
+          </div>
+        </aside>
+        <div class="market-main">
+          <div class="result-bar">
+            <span id="resultSummary">0개 콘텐츠</span>
+            <span>카테고리별 5열 배열</span>
+          </div>
+          <div class="asset-grid" id="assetGrid"></div>
+          <p class="empty" id="emptyState" hidden>조건에 맞는 콘텐츠가 없습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 05: Seller center -->
+    <section class="section split" id="creator">
+      <span class="section-index">05 Creator</span>
+      <div>
+        <p class="eyebrow">Creator Studio</p>
+        <h2>작품 등록부터 관리까지 판매자센터에서 처리</h2>
+        <p class="muted">로그인한 판매자는 이미지와 동영상을 업로드하고, 관리자는 모든 콘텐츠를 검수·삭제할 수 있습니다.</p>
+        <div class="metric-grid">
+          <div><strong>70%</strong><span>판매자 정산 예시</span></div>
+          <div><strong>24h</strong><span>검수 목표</span></div>
+          <div><strong>3단계</strong><span>라이선스</span></div>
+        </div>
+      </div>
+      <div class="creator-actions">
+        <button class="solid-btn" id="creatorUploadBtn" type="button">콘텐츠 등록하기</button>
+        <span id="uploadMode">연결 확인 중</span>
+      </div>
+    </section>
+
+    <!-- SECTION 06: Licensing -->
+    <section class="section license-section" id="license">
+      <span class="section-index">06 Licensing</span>
+      <div class="section-head center">
+        <p class="eyebrow">Licensing</p>
+        <h2>사용 범위에 맞춘 라이선스</h2>
+      </div>
+      <div class="license-grid">
+        <article><h3>Standard</h3><p>웹, SNS, 내부 문서</p><strong>9,000원+</strong></article>
+        <article class="featured"><h3>Extended</h3><p>광고, 인쇄, 유료 캠페인</p><strong>25,000원+</strong></article>
+        <article><h3>Exclusive</h3><p>브랜드 단독 사용</p><strong>문의</strong></article>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="upload-modal" id="uploadModal">
+    <form class="upload-card upload-dialog-panel" id="uploadForm">
+      <button class="modal-close" id="closeUploadBtn" type="button" aria-label="닫기">×</button>
+      <div class="upload-head">
+        <h3>콘텐츠 등록</h3>
+        <span>이미지·동영상 업로드</span>
+      </div>
+      <label>제목<input id="workTitle" required placeholder="예: 서울 야경 배경 영상"></label>
+      <div class="form-row">
+        <label>카테고리<select id="workCategory"><option value="photo">사진</option><option value="video">영상</option><option value="illustration">일러스트</option><option value="painting">파인아트</option></select></label>
+        <label>라이선스<select id="workLicense"><option value="standard">Standard</option><option value="extended">Extended</option><option value="exclusive">Exclusive</option></select></label>
+      </div>
+      <div class="form-row">
+        <label>가격<input id="workPrice" type="number" min="1000" step="500" required placeholder="15000"></label>
+        <label>작가명<input id="workAuthor" placeholder="Studio Lumen"></label>
+      </div>
+      <label>태그<input id="workTags" placeholder="쉼표로 구분: 도시, 야경, 4K"></label>
+      <label>설명<textarea id="workDesc" rows="3" placeholder="사용 범위와 콘텐츠 설명을 입력하세요"></textarea></label>
+      <label class="file-zone" id="fileZone">
+        <input id="workFile" type="file" accept="image/*,video/*" hidden>
+        <span id="fileLabel">파일을 선택하거나 드래그하세요</span>
+      </label>
+      <button class="solid-btn full" type="submit">등록하기</button>
+      <p class="form-note" id="uploadNote">이미지와 동영상은 Supabase Storage에 저장됩니다.</p>
+    </form>
+  </dialog>
+
+  <dialog class="asset-modal" id="assetModal">
+    <div class="modal-panel" id="modalPanel"></div>
+  </dialog>
+
+  <dialog class="auth-modal" id="authModal">
+    <div class="auth-panel">
+      <button class="modal-close" id="closeAuthBtn" type="button" aria-label="닫기">×</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" type="button" data-auth-tab="login">로그인</button>
+        <button class="auth-tab" type="button" data-auth-tab="signup">회원가입</button>
+      </div>
+      <div class="social-login" aria-label="소셜 로그인">
+        <button class="social-btn kakao" type="button" data-provider="kakao"><span aria-hidden="true">K</span><b>카카오로 계속</b></button>
+        <a class="social-btn google" id="googleOAuthLink" href="https://dahswyrfoqgsganwljmr.supabase.co/auth/v1/authorize?provider=google&redirect_to=http%3A%2F%2F127.0.0.1%3A8080%2F" target="_self"><span aria-hidden="true">G</span><b>Google로 계속</b></a>
+        <button class="social-btn naver" type="button" data-provider="naver"><span aria-hidden="true">N</span><b>네이버로 계속</b></button>
+      </div>
+      <div class="auth-divider"><span>또는 이메일로</span></div>
+      <form class="auth-form" id="loginForm">
+        <h2>로그인</h2>
+        <label>이메일<input id="loginEmail" type="email" autocomplete="email" required></label>
+        <label>비밀번호<input id="loginPassword" type="password" autocomplete="current-password" required minlength="6"></label>
+        <button class="solid-btn full" type="submit">로그인</button>
+      </form>
+      <form class="auth-form" id="signupForm" hidden>
+        <h2>회원가입</h2>
+        <label>이름<input id="signupName" type="text" autocomplete="name" required></label>
+        <label>이메일<input id="signupEmail" type="email" autocomplete="email" required></label>
+        <label>비밀번호<input id="signupPassword" type="password" autocomplete="new-password" required minlength="6"></label>
+        <button class="solid-btn full" type="submit">회원가입</button>
+      </form>
+      <p class="auth-note" id="authNote">Google 로그인과 이메일 로그인을 지원합니다.</p>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js?v=20260523-9"></script>
+  <script src="js/app.js?v=20260523-9"></script>
+</body>
+</html>

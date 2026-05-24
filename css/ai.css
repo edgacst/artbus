@@ -1,0 +1,266 @@
+.ai-body {
+  background: #f7f8fa;
+}
+
+.ai-shell {
+  padding-bottom: 76px;
+}
+
+.ai-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1fr);
+  gap: 44px;
+  align-items: center;
+  padding: 70px max(24px, 6vw) 52px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(17,19,24,0.08);
+}
+
+.ai-hero-copy h1 {
+  max-width: 760px;
+  margin-bottom: 18px;
+  color: #111318;
+  font-size: clamp(2.25rem, 5vw, 4.8rem);
+}
+
+.ai-hero-copy p:not(.eyebrow) {
+  max-width: 660px;
+  color: #687281;
+  font-size: 1.05rem;
+}
+
+.ai-preview {
+  overflow: hidden;
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(17,19,24,0.14);
+  background: #e9edf3;
+}
+
+.ai-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  object-fit: cover;
+}
+
+.ai-workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.82fr) minmax(0, 1fr);
+  gap: 22px;
+  padding: 38px max(24px, 6vw);
+}
+
+.ai-panel,
+.ai-output {
+  border: 1px solid rgba(17,19,24,0.1);
+  border-radius: 18px;
+  padding: 24px;
+  background: #fff;
+  box-shadow: var(--soft-shadow);
+}
+
+.ai-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.panel-title h2 {
+  margin-bottom: 0;
+  font-size: 1.75rem;
+}
+
+.ai-panel label {
+  display: grid;
+  gap: 8px;
+  color: #2c313a;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.ai-panel input,
+.ai-panel select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(17,19,24,0.12);
+  border-radius: 10px;
+  padding: 0 13px;
+  background: #f7f8fa;
+  color: #111318;
+  outline: none;
+}
+
+.ai-panel input:focus,
+.ai-panel select:focus {
+  border-color: rgba(0,87,255,0.44);
+  box-shadow: 0 0 0 3px rgba(0,87,255,0.1);
+}
+
+.ai-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segmented legend {
+  grid-column: 1 / -1;
+  margin-bottom: 8px;
+  color: #2c313a;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.segmented label {
+  display: block;
+}
+
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented span {
+  display: grid;
+  place-items: center;
+  min-height: 42px;
+  border: 1px solid rgba(17,19,24,0.12);
+  border-radius: 999px;
+  padding: 0 12px;
+  background: #f7f8fa;
+  color: #2c313a;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.segmented input:checked + span {
+  border-color: #0057ff;
+  background: #0057ff;
+  color: #fff;
+}
+
+.ai-output {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.output-block {
+  border: 1px solid rgba(17,19,24,0.1);
+  border-radius: 14px;
+  padding: 18px;
+  background: #f1f4f8;
+}
+
+.output-block span,
+.output-grid span {
+  display: block;
+  margin-bottom: 7px;
+  color: #687281;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.output-block p {
+  margin: 0;
+  color: #111318;
+  font-weight: 700;
+}
+
+.output-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.output-grid article {
+  border: 1px solid rgba(17,19,24,0.1);
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff;
+}
+
+.output-grid strong {
+  font-size: 1.12rem;
+}
+
+.ai-gallery {
+  padding: 34px max(24px, 6vw) 0;
+}
+
+.ai-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ai-card-grid article {
+  overflow: hidden;
+  border: 1px solid rgba(17,19,24,0.1);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--soft-shadow);
+}
+
+.ai-card-grid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.ai-card-grid strong,
+.ai-card-grid span {
+  display: block;
+  padding-inline: 14px;
+}
+
+.ai-card-grid strong {
+  padding-top: 13px;
+  font-size: 1rem;
+}
+
+.ai-card-grid span {
+  padding-bottom: 16px;
+  color: #687281;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .ai-hero,
+  .ai-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .ai-hero {
+    padding: 46px 18px 34px;
+  }
+
+  .ai-workspace,
+  .ai-gallery {
+    padding-inline: 18px;
+  }
+
+  .ai-field-grid,
+  .segmented,
+  .output-grid,
+  .ai-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

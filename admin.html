@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 · ArtBus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Syne:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/theme-shutterstock.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <header class="site-header compact-header" id="siteHeader">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true"></span>
+        <span class="logo-text">ArtBus</span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html#discover">마켓</a>
+        <a href="mypage.html">마이페이지</a>
+        <a href="admin.html" class="on nav-admin">관리자</a>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="btn-text" id="authBtn">로그인</button>
+        <a href="index.html" class="btn-line btn-sm">홈으로</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <header class="page-header">
+      <p class="overline">Admin</p>
+      <h1>관리자 대시보드</h1>
+      <p>작품·회원·피처드 상태를 관리합니다.</p>
+    </header>
+
+    <div class="dash-grid" id="adminStats"></div>
+
+    <section class="panel" style="margin-bottom: 2rem;">
+      <div class="panel-head">
+        <h3>전체 작품</h3>
+        <button type="button" class="btn-text-sm" id="refreshWorks">새로고침</button>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table" id="worksTable">
+          <thead>
+            <tr>
+              <th></th>
+              <th>제목</th>
+              <th>카테고리</th>
+              <th>작가</th>
+              <th>가격</th>
+              <th>피처드</th>
+              <th>트렌딩</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="worksTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h3>회원 (프로필)</h3>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>이름</th>
+              <th>ID</th>
+              <th>가입일</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="empty-page" id="adminDenied" hidden>관리자 권한이 없습니다. config.js의 ADMIN_EMAILS에 본인 이메일을 추가하세요.</p>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-api.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
