@@ -25,7 +25,7 @@
     </nav>
     <div class="top-actions">
       <button class="ghost-btn" id="authBtn" type="button">로그인</button>
-      <a class="ghost-btn header-link" href="mypage.html">마이페이지</a>
+      <a class="ghost-btn header-link" id="mypageLink" href="mypage.html">마이페이지</a>
       <button class="solid-btn" id="openUploadBtn" type="button">콘텐츠 등록</button>
     </div>
   </header>
@@ -184,8 +184,8 @@
     <form class="upload-card upload-dialog-panel" id="uploadForm">
       <button class="modal-close" id="closeUploadBtn" type="button" aria-label="닫기">×</button>
       <div class="upload-head">
-        <h3>콘텐츠 등록</h3>
-        <span>이미지·동영상 업로드</span>
+        <h3 id="uploadModalTitle">콘텐츠 등록</h3>
+        <span id="uploadModalSubtitle">이미지·동영상 업로드</span>
       </div>
       <label>제목<input id="workTitle" required placeholder="예: 서울 야경 배경 영상"></label>
       <div class="form-row">
@@ -202,7 +202,7 @@
         <input id="workFile" type="file" accept="image/*,video/*" hidden>
         <span id="fileLabel">파일을 선택하거나 드래그하세요</span>
       </label>
-      <button class="solid-btn full" type="submit">등록하기</button>
+      <button class="solid-btn full" id="uploadSubmitBtn" type="submit">등록하기</button>
       <p class="form-note" id="uploadNote">이미지와 동영상은 Supabase Storage에 저장됩니다.</p>
     </form>
   </dialog>

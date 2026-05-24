@@ -28,16 +28,11 @@ function ensureClient() {
 }
 
 function getRedirectUrl() {
-  if (CONFIG.PUBLIC_SITE_URL) return CONFIG.PUBLIC_SITE_URL;
   return window.location.origin + window.location.pathname;
 }
 
 function redirectToPublicSiteIfNeeded() {
-  if (!CONFIG.PUBLIC_SITE_URL) return false;
-  const publicUrl = new URL(CONFIG.PUBLIC_SITE_URL);
-  if (window.location.origin === publicUrl.origin) return false;
-  window.location.href = CONFIG.PUBLIC_SITE_URL;
-  return true;
+  return false;
 }
 
 function storagePathFromPublicUrl(url) {
@@ -160,16 +155,8 @@ async function init() {
   renderAccount();
   if (state.user) await loadWorks();
 
-  $('#authBtn').addEventListener('click', async () => {
-    if (state.user) {
-      await client.auth.signOut();
-      state.user = null;
-      state.works = [];
-      renderAccount();
-      renderStats();
-      renderWorks();
-      return;
-    }
+  $('#authBtn').addEventListener('click', () => {
+    if (state.user) return;
     location.href = $('#googleLoginLink').href;
   });
 

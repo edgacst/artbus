@@ -44,8 +44,9 @@ npm run check
 
 1. Supabase 프로젝트를 만듭니다.
 2. `js/config.js`에 프로젝트 URL과 publishable key를 넣습니다.
-3. Supabase SQL Editor에서 `supabase/RUN-THIS-FIRST.sql`을 실행합니다.
-4. 사이트에서 업로드, 로그인, 마이페이지 기능을 확인합니다.
+3. Supabase SQL Editor에서 `supabase/PRODUCTION-SETUP.sql`을 실행합니다.
+4. Supabase Auth redirect는 `supabase/AUTH-REDIRECT-CHECKLIST.md`를 보고 설정합니다.
+5. 사이트에서 업로드, 로그인, 마이페이지 기능을 확인합니다.
 
 ## AI Studio 연결
 

@@ -556,12 +556,18 @@ body.show-section-index .section-index {
   border: 0;
   padding: 10px 12px;
   background: transparent;
-  color: #b43d2a;
+  color: var(--ink);
   font-weight: 900;
   text-align: left;
   cursor: pointer;
 }
 .card-menu-panel button:hover {
+  background: #eef3ff;
+}
+.card-menu-panel button[data-delete-asset] {
+  color: #b43d2a;
+}
+.card-menu-panel button[data-delete-asset]:hover {
   background: #fff2ef;
 }
 .asset-card:hover {

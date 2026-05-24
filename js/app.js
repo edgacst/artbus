@@ -109,6 +109,7 @@ const state = {
   client: null,
   user: null,
   expandedGroups: new Set(),
+  editingAssetId: null,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -136,21 +137,15 @@ function isSupabaseReady() {
 }
 
 function getRedirectUrl() {
-  if (CONFIG.PUBLIC_SITE_URL) return CONFIG.PUBLIC_SITE_URL;
   return window.location.origin + window.location.pathname;
 }
 
 function getMypageUrl() {
-  if (CONFIG.PUBLIC_SITE_URL) return new URL('mypage.html', CONFIG.PUBLIC_SITE_URL).href;
   return 'mypage.html';
 }
 
 function redirectToPublicSiteIfNeeded() {
-  if (!CONFIG.PUBLIC_SITE_URL) return false;
-  const publicUrl = new URL(CONFIG.PUBLIC_SITE_URL);
-  if (window.location.origin === publicUrl.origin) return false;
-  window.location.href = CONFIG.PUBLIC_SITE_URL;
-  return true;
+  return false;
 }
 
 function ensureSupabaseClient() {
@@ -248,7 +243,7 @@ function renderAuthState() {
   const button = $('#authBtn');
   if (!button) return;
   button.textContent = state.user ? (state.user.email || '내 계정') : '로그인';
-  button.title = state.user ? '클릭하면 로그아웃됩니다' : '로그인';
+  button.title = state.user ? '마이페이지로 이동' : '로그인';
 }
 
 function setDbStatus(text, tone) {
@@ -414,6 +409,7 @@ function assetCardMarkup(asset) {
         <div class="card-menu">
           <button class="card-menu-btn" type="button" aria-label="콘텐츠 관리" data-menu-for="${asset.id}">⋯</button>
           <div class="card-menu-panel" id="menu-${asset.id}" hidden>
+            <button type="button" data-edit-asset="${asset.id}">수정</button>
             <button type="button" data-delete-asset="${asset.id}">삭제</button>
           </div>
         </div>
@@ -498,6 +494,14 @@ function renderAssets() {
     });
   });
 
+  $$('[data-edit-asset]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const asset = state.assets.find((item) => item.id === button.dataset.editAsset);
+      if (asset) openEditAsset(asset);
+    });
+  });
+
   $$('[data-delete-asset]').forEach((button) => {
     button.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -543,6 +547,37 @@ function openAsset(id) {
   $('#closeModalBtn').addEventListener('click', () => $('#assetModal').close());
   const deleteButton = $('#deleteAssetBtn');
   if (deleteButton) deleteButton.addEventListener('click', () => deleteAsset(asset));
+}
+
+function setUploadMode(mode, asset = null) {
+  const isEdit = mode === 'edit';
+  state.editingAssetId = isEdit ? asset.id : null;
+  $('#uploadModalTitle').textContent = isEdit ? '콘텐츠 수정' : '콘텐츠 등록';
+  $('#uploadModalSubtitle').textContent = isEdit ? '콘텐츠 정보 수정' : '이미지·동영상 업로드';
+  $('#uploadSubmitBtn').textContent = isEdit ? '수정 저장' : '등록하기';
+  $('#workFile').required = false;
+  $('#fileZone').hidden = isEdit;
+  $('#fileLabel').textContent = '파일을 선택하거나 드래그하세요';
+}
+
+function resetUploadForm() {
+  $('#uploadForm').reset();
+  setUploadMode('create');
+}
+
+function openEditAsset(asset) {
+  if (!canManageAsset(asset)) return toast('수정 권한이 없습니다.');
+  if (!state.client) return toast('수정은 로그인 연결 후 사용할 수 있습니다.');
+
+  setUploadMode('edit', asset);
+  $('#workTitle').value = asset.title || '';
+  $('#workCategory').value = asset.category || 'photo';
+  $('#workLicense').value = asset.license || 'standard';
+  $('#workPrice').value = asset.price || 0;
+  $('#workAuthor').value = asset.author_name || '';
+  $('#workTags').value = (asset.tags || []).join(', ');
+  $('#workDesc').value = asset.description || '';
+  $('#uploadModal').showModal();
 }
 
 async function deleteAsset(asset) {
@@ -604,6 +639,11 @@ async function submitUpload(event) {
   }
   if (!state.client) return toast('업로드는 Supabase SDK 연결 후 사용할 수 있습니다.');
 
+  if (state.editingAssetId) {
+    await submitEdit();
+    return;
+  }
+
   let uploaded;
   try {
     uploaded = await uploadMediaFile($('#workFile').files[0]);
@@ -629,11 +669,39 @@ async function submitUpload(event) {
   if (error) return toast(`DB 저장 실패: ${error.message}`);
 
   await connectSupabase();
-  event.target.reset();
-  $('#fileLabel').textContent = '파일을 선택하거나 드래그하세요';
+  resetUploadForm();
   $('#uploadModal').close();
   renderAssets();
   toast('콘텐츠가 등록되었습니다.');
+}
+
+async function submitEdit() {
+  const asset = state.assets.find((item) => item.id === state.editingAssetId);
+  if (!asset || !canManageAsset(asset)) return toast('수정 권한이 없습니다.');
+
+  const payload = {
+    title: $('#workTitle').value.trim(),
+    category: $('#workCategory').value,
+    license: $('#workLicense').value,
+    price: Number($('#workPrice').value),
+    author_name: $('#workAuthor').value.trim() || state.user.email || 'ArtBus Creator',
+    tags: $('#workTags').value.split(',').map((tag) => tag.trim()).filter(Boolean),
+    description: $('#workDesc').value.trim(),
+  };
+
+  const { error } = await state.client
+    .from('works')
+    .update(payload)
+    .eq('id', asset.id)
+    .eq('author_id', state.user.id);
+
+  if (error) return toast(`수정 실패: ${error.message}`);
+
+  await connectSupabase();
+  resetUploadForm();
+  $('#uploadModal').close();
+  renderAssets();
+  toast('콘텐츠 정보가 수정되었습니다.');
 }
 
 function bindEvents() {
@@ -693,12 +761,16 @@ function bindEvents() {
       toast('콘텐츠 등록은 로그인 후 사용할 수 있습니다.');
       return;
     }
+    resetUploadForm();
     $('#uploadModal').showModal();
   };
   $('#openUploadBtn').addEventListener('click', openUploadModal);
   const creatorUploadBtn = $('#creatorUploadBtn');
   if (creatorUploadBtn) creatorUploadBtn.addEventListener('click', openUploadModal);
-  $('#closeUploadBtn').addEventListener('click', () => $('#uploadModal').close());
+  $('#closeUploadBtn').addEventListener('click', () => {
+    resetUploadForm();
+    $('#uploadModal').close();
+  });
   const connectionBtn = $('#connectionBtn');
   if (connectionBtn) {
     connectionBtn.addEventListener('click', async () => {
@@ -724,12 +796,18 @@ function bindEvents() {
     googleOAuthLink.href = `${CONFIG.SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
   }
 
+  const mypageLink = $('#mypageLink');
+  if (mypageLink) mypageLink.href = getMypageUrl();
+
   $('#workFile').addEventListener('change', (event) => {
     $('#fileLabel').textContent = event.target.files[0]?.name || '파일을 선택하거나 드래그하세요';
   });
   $('#uploadForm').addEventListener('submit', submitUpload);
   $('#uploadModal').addEventListener('click', (event) => {
-    if (event.target === $('#uploadModal')) $('#uploadModal').close();
+    if (event.target === $('#uploadModal')) {
+      resetUploadForm();
+      $('#uploadModal').close();
+    }
   });
   $('#assetModal').addEventListener('click', (event) => {
     if (event.target === $('#assetModal')) $('#assetModal').close();
