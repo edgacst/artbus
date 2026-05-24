@@ -90,6 +90,11 @@ function isSupabaseReady() {
   return Boolean(window.supabase && hasSupabaseConfig());
 }
 
+function getRedirectUrl() {
+  if (CONFIG.PUBLIC_SITE_URL) return CONFIG.PUBLIC_SITE_URL;
+  return window.location.origin + window.location.pathname;
+}
+
 function ensureSupabaseClient() {
   if (!isSupabaseReady()) return null;
   if (!state.client) {
@@ -249,7 +254,7 @@ async function handleSignup(event) {
 async function handleOAuth(provider) {
   if (provider === 'naver') return toast('네이버는 커스텀 OAuth 설정이 필요합니다.');
   if (!hasSupabaseConfig()) return toast('Supabase 설정이 필요합니다.');
-  const redirectTo = window.location.origin + window.location.pathname;
+  const redirectTo = getRedirectUrl();
   window.location.href = `${CONFIG.SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(redirectTo)}`;
 }
 
@@ -654,7 +659,7 @@ function bindEvents() {
 
   const googleOAuthLink = $('#googleOAuthLink');
   if (googleOAuthLink && hasSupabaseConfig()) {
-    const redirectTo = window.location.origin + window.location.pathname;
+    const redirectTo = getRedirectUrl();
     googleOAuthLink.href = `${CONFIG.SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
   }
 

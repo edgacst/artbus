@@ -27,6 +27,11 @@ function ensureClient() {
   return state.client;
 }
 
+function getRedirectUrl() {
+  if (CONFIG.PUBLIC_SITE_URL) return CONFIG.PUBLIC_SITE_URL;
+  return window.location.origin + window.location.pathname;
+}
+
 function storagePathFromPublicUrl(url) {
   if (!url || !url.includes(`/storage/v1/object/public/${STORAGE_BUCKET}/`)) return null;
   try {
@@ -133,7 +138,7 @@ async function deleteWork(id) {
 
 async function init() {
   const client = ensureClient();
-  const redirectTo = window.location.origin + window.location.pathname;
+  const redirectTo = getRedirectUrl();
   $('#googleLoginLink').href = `${CONFIG.SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
 
   if (!client) {
