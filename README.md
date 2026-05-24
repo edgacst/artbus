@@ -1,7 +1,8 @@
 # ArtBus
 
-브랜드와 크리에이터를 위한 프리미엄 비주얼 라이선싱 마켓플레이스입니다.  
-현재 버전은 별도 빌드 도구 없이 실행되는 Vanilla HTML/CSS/JavaScript 프로젝트이며, Supabase가 연결되면 `works` 테이블의 라이브 데이터를 사용하고, 연결 전에는 샘플 데이터로 동작합니다.
+ArtBus는 사진, 영상, 일러스트, 페인팅 같은 비주얼 콘텐츠를 검색하고 라이선스 판매 흐름을 실험하는 정적 웹 마켓플레이스입니다.
+
+Vanilla HTML/CSS/JavaScript로 동작하며, Supabase를 연결하면 `works` 테이블의 라이브 데이터를 사용합니다. 연결 전에는 샘플 데이터로 화면을 확인할 수 있습니다.
 
 ## 실행
 
@@ -15,40 +16,47 @@ npm start
 http://127.0.0.1:8080/
 ```
 
-## 검증
+## 확인
 
 ```bash
 npm run check
 ```
 
+## 주요 페이지
+
+- `index.html` - 메인 마켓플레이스
+- `ai.html` - AI Studio 프롬프트/제작 브리프 페이지
+- `mypage.html` - 로그인 사용자의 콘텐츠 관리 페이지
+- `admin.html` - 관리자 페이지
+
 ## 주요 파일
 
-- `index.html` - 메인 앱 화면
-- `css/main.css` - 전체 UI 스타일
+- `css/main.css` - 공통 UI 스타일
+- `css/ai.css` - AI Studio 전용 스타일
 - `js/app.js` - 마켓 검색, 필터, 상세 모달, 업로드, Supabase 연결
+- `js/ai.js` - AI Studio 프롬프트 생성 로직
+- `js/mypage.js` - 마이페이지 계정/업로드 목록 관리
 - `js/config.js` - Supabase 프로젝트 URL과 publishable key
-- `supabase/RUN-THIS-FIRST.sql` - Supabase 최초 설치 SQL
+- `supabase/RUN-THIS-FIRST.sql` - Supabase 초기 설치 SQL
 - `static-server.js` - 로컬 정적 서버
 
 ## Supabase 연결
 
 1. Supabase 프로젝트를 만듭니다.
 2. `js/config.js`에 프로젝트 URL과 publishable key를 넣습니다.
-3. Supabase SQL Editor에서 `supabase/RUN-THIS-FIRST.sql` 전체를 실행합니다.
-4. 사이트에서 `연결 확인` 버튼을 누릅니다.
-
-성공하면 상태 배지가 `Supabase 연결됨` 또는 `DB 연결됨 · 샘플 표시`로 바뀝니다.
+3. Supabase SQL Editor에서 `supabase/RUN-THIS-FIRST.sql`을 실행합니다.
+4. 사이트에서 업로드, 로그인, 마이페이지 기능을 확인합니다.
 
 ## 현재 범위
 
-이 프로젝트는 MVP 기준입니다.
-
-- 에셋 검색과 필터
-- 샘플 데이터 기반 마켓
+- 콘텐츠 검색과 필터
+- 샘플 데이터 기반 마켓 화면
 - Supabase `works` 테이블 연결
 - Supabase Auth 로그인/회원가입/로그아웃
-- 작품 등록 폼
-- 상세 모달
+- 콘텐츠 등록과 삭제
+- 콘텐츠 상세 모달
 - 라이선스 섹션
+- AI Studio 프롬프트 생성 페이지
+- 마이페이지 업로드 관리
 
-결제, 관리자 승인, 정산, 파일 Storage 업로드는 다음 단계에서 확장하는 구조로 남겨두었습니다.
+결제, 정산, 고급 관리자 승인 흐름은 추후 확장 대상입니다.
