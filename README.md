@@ -47,6 +47,17 @@ npm run check
 3. Supabase SQL Editor에서 `supabase/RUN-THIS-FIRST.sql`을 실행합니다.
 4. 사이트에서 업로드, 로그인, 마이페이지 기능을 확인합니다.
 
+## AI Studio 연결
+
+AI Studio의 `AI로 브리프 생성` 버튼은 서버의 `/api/ai/brief` 엔드포인트를 호출합니다.
+
+1. `.env.example`을 참고해 `.env` 파일을 만듭니다.
+2. `.env`에 `OPENAI_API_KEY`를 넣습니다.
+3. 필요하면 `OPENAI_MODEL` 값을 바꿉니다. 기본값은 `gpt-5.2`입니다.
+4. 서버를 다시 시작합니다.
+
+API 키가 없으면 AI Studio는 로컬 생성 결과를 사용합니다.
+
 ## 현재 범위
 
 - 콘텐츠 검색과 필터
@@ -56,7 +67,7 @@ npm run check
 - 콘텐츠 등록과 삭제
 - 콘텐츠 상세 모달
 - 라이선스 섹션
-- AI Studio 프롬프트 생성 페이지
+- OpenAI Responses API 기반 AI Studio 브리프 생성
 - 마이페이지 업로드 관리
 
 결제, 정산, 고급 관리자 승인 흐름은 추후 확장 대상입니다.

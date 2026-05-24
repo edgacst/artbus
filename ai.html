@@ -87,7 +87,10 @@
           <input id="keywordInput" type="text" value="친환경, 유리병, 깨끗한 배경, 프리미엄 패키지" placeholder="쉼표로 구분">
         </label>
 
-        <button class="solid-btn full" type="submit">프롬프트 생성</button>
+        <div class="ai-button-row">
+          <button class="solid-btn full" id="aiGenerateBtn" type="button">AI로 브리프 생성</button>
+          <button class="ghost-btn full" type="submit">로컬 생성</button>
+        </div>
       </form>
 
       <section class="ai-output" aria-label="생성 결과">
@@ -112,6 +115,14 @@
             <span>권장 가격</span>
             <strong id="priceOutput">25,000원</strong>
           </article>
+          <article>
+            <span>생성 방식</span>
+            <strong id="sourceOutput">로컬 생성</strong>
+          </article>
+        </div>
+        <div class="output-block compact">
+          <span>판매 설명</span>
+          <p id="descriptionOutput"></p>
         </div>
         <button class="ghost-btn full" id="copyPromptBtn" type="button">프롬프트 복사</button>
       </section>

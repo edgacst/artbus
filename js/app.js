@@ -48,6 +48,50 @@ const SAMPLE_ASSETS = [
   created_at: new Date(Date.now() - index * 86400000).toISOString(),
 }));
 
+const EXTRA_SAMPLE_ASSETS = [
+  ['제품 스튜디오 컷', 'photo', 30000, 'extended', ['제품', '커머스', '상세페이지'], 'Wave Stock', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1000&q=82', 4450],
+  ['비즈니스 프레젠테이션', 'photo', 18000, 'standard', ['비즈니스', '스피치', '오피스'], 'Wave Stock', 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1000&q=82', 3820],
+  ['카페 브랜딩 무드', 'photo', 21000, 'standard', ['카페', '라이프스타일', '브랜드'], 'Seoul Archive', 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1000&q=82', 2980],
+  ['화장품 패키지 클로즈업', 'photo', 34000, 'extended', ['뷰티', '제품', '프리미엄'], 'Commerce Lab', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1000&q=82', 2760],
+  ['푸드 딜리버리 컷', 'photo', 19000, 'standard', ['푸드', '배달', 'SNS'], 'Table Studio', 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1000&q=82', 2610],
+  ['호텔 로비 인테리어', 'photo', 36000, 'extended', ['공간', '호텔', '인테리어'], 'Space Stock', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1000&q=82', 2520],
+  ['피트니스 캠페인', 'photo', 24000, 'extended', ['스포츠', '건강', '캠페인'], 'Active Frame', 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1000&q=82', 2380],
+  ['친환경 라이프스타일', 'photo', 27000, 'extended', ['친환경', '생활', '브랜드'], 'Green Mood', 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1000&q=82', 2140],
+  ['도심 드론 무드', 'video', 58000, 'extended', ['드론', '도시', '오프닝'], 'Aerial Seoul', 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1000&q=82', 3260],
+  ['브랜드 쇼츠 배경', 'video', 39000, 'standard', ['쇼츠', '릴스', '배경'], 'Shorts Factory', 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1000&q=82', 3020],
+  ['커피 추출 슬로모션', 'video', 42000, 'extended', ['카페', '슬로모션', '푸드'], 'Table Studio', 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=1000&q=82', 2860],
+  ['패션 런웨이 루프', 'video', 54000, 'extended', ['패션', '런웨이', '루프'], 'Motion Lab', 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=1000&q=82', 2690],
+  ['테크 제품 회전컷', 'video', 48000, 'extended', ['테크', '제품', '광고'], 'Pixel Motion', 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&q=82', 2410],
+  ['자연광 홈 루틴', 'video', 35000, 'standard', ['홈', '생활', '루틴'], 'Daily Film', 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=1000&q=82', 2190],
+  ['핀테크 대시보드 그래픽', 'illustration', 28000, 'extended', ['핀테크', '대시보드', 'UI'], 'Data Visual', 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1000&q=82', 2680],
+  ['교육 플랫폼 캐릭터', 'illustration', 18000, 'standard', ['교육', '캐릭터', '앱'], 'Mina Park', 'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1000&q=82', 2450],
+  ['헬스케어 라인 그래픽', 'illustration', 22000, 'extended', ['헬스케어', '라인', '인포그래픽'], 'Care Visual', 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1000&q=82', 2310],
+  ['커머스 쿠폰 배너', 'illustration', 14000, 'standard', ['배너', '쿠폰', '프로모션'], 'Pixel Forge', 'https://images.unsplash.com/photo-1607082350899-7e105aa886ae?w=1000&q=82', 2240],
+  ['모바일 온보딩 씬', 'illustration', 26000, 'extended', ['모바일', '온보딩', 'SaaS'], 'App Story', 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=1000&q=82', 2080],
+  ['부동산 지도 그래픽', 'illustration', 20000, 'standard', ['지도', '부동산', '로컬'], 'Map Studio', 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1000&q=82', 1940],
+  ['푸드 패키지 패턴', 'illustration', 17000, 'standard', ['패턴', '푸드', '패키지'], 'Color House', 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=1000&q=82', 1820],
+  ['블루 모노톤 캔버스', 'painting', 42000, 'extended', ['블루', '추상', '벽면'], 'Gallery One', 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=1000&q=82', 1640],
+  ['한지 질감 추상', 'painting', 46000, 'exclusive', ['한지', '질감', '브랜드'], 'Han Studio', 'https://images.unsplash.com/photo-1578926288207-a90a5366759d?w=1000&q=82', 1510],
+  ['그린 오가닉 페인팅', 'painting', 38000, 'extended', ['그린', '오가닉', '친환경'], 'Green Mood', 'https://images.unsplash.com/photo-1579541591970-e5f6d0d2cbca?w=1000&q=82', 1430],
+  ['모던 갤러리 월아트', 'painting', 56000, 'exclusive', ['갤러리', '월아트', '프리미엄'], 'Gallery One', 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=1000&q=82', 1320],
+  ['코랄 컬러 필드', 'painting', 34000, 'standard', ['코랄', '컬러필드', '배경'], 'Color House', 'https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=1000&q=82', 1210],
+  ['잉크 플로우 아트', 'painting', 39000, 'extended', ['잉크', '흐름', '패키지'], 'Ink Room', 'https://images.unsplash.com/photo-1604871000636-074fa5117945?w=1000&q=82', 1090],
+].map((item, index) => ({
+  id: `extra-${index + 1}`,
+  title: item[0],
+  category: item[1],
+  price: item[2],
+  license: item[3],
+  tags: item[4],
+  author_name: item[5],
+  author_id: null,
+  media_url: item[6],
+  media_type: 'image',
+  downloads: item[7],
+  description: `${item[0]} 콘텐츠입니다. 광고, 상세페이지, SNS 제작에 바로 적용할 수 있도록 라이선스 정보와 가격을 정리했습니다.`,
+  created_at: new Date(Date.now() - (index + SAMPLE_ASSETS.length) * 86400000).toISOString(),
+}));
+
 const COLLECTIONS = [
   ['제품 상세페이지', '커머스와 브랜드 소개에 어울리는 이미지', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=82'],
   ['숏폼 영상 배경', '릴스와 쇼츠용 무드 영상', 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=900&q=82'],
@@ -56,7 +100,7 @@ const COLLECTIONS = [
 ];
 
 const state = {
-  assets: [...SAMPLE_ASSETS],
+  assets: [...SAMPLE_ASSETS, ...EXTRA_SAMPLE_ASSETS],
   source: 'sample',
   query: '',
   category: 'all',
@@ -69,6 +113,7 @@ const state = {
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+const ALL_SAMPLE_ASSETS = [...SAMPLE_ASSETS, ...EXTRA_SAMPLE_ASSETS];
 
 function money(value) {
   return `${Number(value || 0).toLocaleString('ko-KR')}원`;
@@ -168,7 +213,7 @@ async function connectSupabase() {
     });
     if (!response.ok) throw new Error(`REST ${response.status}`);
     const data = await response.json();
-    state.assets = data.length ? data.map(normalizeRow) : [...SAMPLE_ASSETS];
+    state.assets = data.length ? [...data.map(normalizeRow), ...ALL_SAMPLE_ASSETS] : [...ALL_SAMPLE_ASSETS];
     state.source = 'supabase';
     setDbStatus(data.length ? '라이브 DB 연결' : 'DB 연결됨, 샘플 표시', data.length ? 'live' : 'warn');
     $('#uploadMode').textContent = state.client ? 'DB 저장 가능' : '목록만 DB 연결';
@@ -176,7 +221,7 @@ async function connectSupabase() {
     renderAuthState();
     return true;
   } catch (error) {
-    state.assets = [...SAMPLE_ASSETS];
+    state.assets = [...ALL_SAMPLE_ASSETS];
     state.source = 'sample';
     setDbStatus('샘플 데이터', 'error');
     $('#uploadMode').textContent = '샘플 모드';
@@ -376,7 +421,7 @@ function assetCardMarkup(asset) {
 
 function categoryGroupMarkup(group) {
   const isExpanded = state.expandedGroups.has(group.key);
-  const visibleAssets = isExpanded ? group.assets : group.assets.slice(0, 10);
+  const visibleAssets = isExpanded ? group.assets : group.assets.slice(0, 12);
   const hasMore = group.assets.length > visibleAssets.length;
   return `
     <section class="market-category" data-group="${group.key}">
@@ -404,7 +449,7 @@ function renderAssets() {
       key: 'photo',
       title: '사진/이미지',
       kicker: 'Category 01',
-      assets: list.filter((asset) => asset.media_type !== 'video' && ['photo', 'painting'].includes(asset.category)),
+      assets: list.filter((asset) => asset.media_type !== 'video' && asset.category === 'photo'),
     },
     {
       key: 'video',
@@ -417,6 +462,12 @@ function renderAssets() {
       title: '일러스트/그래픽',
       kicker: 'Category 03',
       assets: list.filter((asset) => asset.category === 'illustration'),
+    },
+    {
+      key: 'painting',
+      title: '파인아트/페인팅',
+      kicker: 'Category 04',
+      assets: list.filter((asset) => asset.category === 'painting'),
     },
   ].filter((group) => group.assets.length > 0);
 
