@@ -140,6 +140,19 @@ function getRedirectUrl() {
   return window.location.origin + window.location.pathname;
 }
 
+function getMypageUrl() {
+  if (CONFIG.PUBLIC_SITE_URL) return new URL('mypage.html', CONFIG.PUBLIC_SITE_URL).href;
+  return 'mypage.html';
+}
+
+function redirectToPublicSiteIfNeeded() {
+  if (!CONFIG.PUBLIC_SITE_URL) return false;
+  const publicUrl = new URL(CONFIG.PUBLIC_SITE_URL);
+  if (window.location.origin === publicUrl.origin) return false;
+  window.location.href = CONFIG.PUBLIC_SITE_URL;
+  return true;
+}
+
 function ensureSupabaseClient() {
   if (!isSupabaseReady()) return null;
   if (!state.client) {
@@ -259,11 +272,7 @@ function switchAuthTab(tabName) {
 async function handleAuthButton() {
   ensureSupabaseClient();
   if (state.user) {
-    await state.client.auth.signOut();
-    state.user = null;
-    renderAuthState();
-    renderAssets();
-    toast('로그아웃되었습니다.');
+    window.location.href = getMypageUrl();
     return;
   }
   openAuth('login');
@@ -279,6 +288,7 @@ async function handleLogin(event) {
   if (error) return toast(error.message);
   await refreshSession();
   $('#authModal').close();
+  if (redirectToPublicSiteIfNeeded()) return;
   renderAssets();
   toast('로그인되었습니다.');
 }

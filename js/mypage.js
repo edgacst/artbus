@@ -32,6 +32,14 @@ function getRedirectUrl() {
   return window.location.origin + window.location.pathname;
 }
 
+function redirectToPublicSiteIfNeeded() {
+  if (!CONFIG.PUBLIC_SITE_URL) return false;
+  const publicUrl = new URL(CONFIG.PUBLIC_SITE_URL);
+  if (window.location.origin === publicUrl.origin) return false;
+  window.location.href = CONFIG.PUBLIC_SITE_URL;
+  return true;
+}
+
 function storagePathFromPublicUrl(url) {
   if (!url || !url.includes(`/storage/v1/object/public/${STORAGE_BUCKET}/`)) return null;
   try {
@@ -148,6 +156,7 @@ async function init() {
 
   const { data } = await client.auth.getSession();
   state.user = data.session?.user || null;
+  if (state.user && redirectToPublicSiteIfNeeded()) return;
   renderAccount();
   if (state.user) await loadWorks();
 
