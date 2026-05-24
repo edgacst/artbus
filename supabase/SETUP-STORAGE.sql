@@ -15,10 +15,9 @@ set
   file_size_limit = excluded.file_size_limit,
   allowed_mime_types = excluded.allowed_mime_types;
 
+-- Public buckets can serve files by URL without a broad storage.objects SELECT policy.
+-- Keeping SELECT open lets clients list bucket objects, so remove it.
 drop policy if exists "artbus media public read" on storage.objects;
-create policy "artbus media public read"
-  on storage.objects for select
-  using (bucket_id = 'artbus-media');
 
 drop policy if exists "artbus media authenticated upload" on storage.objects;
 create policy "artbus media authenticated upload"

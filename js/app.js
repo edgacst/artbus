@@ -118,6 +118,8 @@ const state = {
   user: null,
   expandedGroups: new Set(),
   editingAssetId: null,
+  likedAssetIds: new Set(),
+  cartAssetIds: new Set(),
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -164,6 +166,141 @@ function toast(message) {
   el.classList.add('show');
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+function closeDialog(selector) {
+  const dialog = $(selector);
+  if (dialog?.open) dialog.close();
+}
+
+function showDialog(selector) {
+  const dialog = $(selector);
+  if (!dialog) return;
+  if (dialog.open) return;
+  dialog.showModal();
+}
+
+function readSavedSet(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return new Set(Array.isArray(value) ? value : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSet(key, value) {
+  localStorage.setItem(key, JSON.stringify([...value]));
+}
+
+function loadUserActions() {
+  state.likedAssetIds = readSavedSet('artbus_liked_assets');
+  state.cartAssetIds = readSavedSet('artbus_cart');
+}
+
+function assetLikeCount(asset) {
+  const baseCount = Math.max(0, Math.round(Number(asset.downloads || 0) / 18));
+  return baseCount + (state.likedAssetIds.has(asset.id) ? 1 : 0);
+}
+
+function toggleLike(assetId) {
+  if (state.likedAssetIds.has(assetId)) {
+    state.likedAssetIds.delete(assetId);
+    toast('좋아요를 취소했습니다.');
+  } else {
+    state.likedAssetIds.add(assetId);
+    toast('좋아요에 추가했습니다.');
+  }
+  saveSet('artbus_liked_assets', state.likedAssetIds);
+  renderAssets();
+}
+
+function toggleCart(assetId) {
+  if (state.cartAssetIds.has(assetId)) {
+    state.cartAssetIds.delete(assetId);
+    toast('장바구니에서 제외했습니다.');
+  } else {
+    state.cartAssetIds.add(assetId);
+    toast('장바구니에 담았습니다.');
+  }
+  saveSet('artbus_cart', state.cartAssetIds);
+  renderAssets();
+  renderCartControls();
+}
+
+function cartAssets() {
+  return state.assets.filter((asset) => state.cartAssetIds.has(asset.id));
+}
+
+function renderCartControls() {
+  let button = $('#cartFloatingBtn');
+  let dialog = $('#cartDialog');
+  if (!button) {
+    document.body.insertAdjacentHTML('beforeend', `
+      <button class="cart-floating-btn" id="cartFloatingBtn" type="button" aria-label="장바구니 열기">
+        <span>장바구니</span><strong id="cartFloatingCount">0</strong>
+      </button>
+      <dialog class="cart-dialog" id="cartDialog">
+        <div class="cart-dialog-panel">
+          <div class="cart-dialog-head">
+            <div>
+              <p class="eyebrow">Cart</p>
+              <h2>장바구니</h2>
+            </div>
+            <button class="ghost-btn" id="closeCartBtn" type="button">닫기</button>
+          </div>
+          <div class="cart-list" id="cartList"></div>
+          <div class="cart-total" id="cartTotal"></div>
+        </div>
+      </dialog>
+    `);
+    button = $('#cartFloatingBtn');
+    dialog = $('#cartDialog');
+    button.addEventListener('click', openCartDialog);
+    $('#closeCartBtn').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  }
+
+  $('#cartFloatingCount').textContent = state.cartAssetIds.size.toLocaleString('ko-KR');
+  button.classList.toggle('has-items', state.cartAssetIds.size > 0);
+  renderCartDialog();
+}
+
+function renderCartDialog() {
+  const items = cartAssets();
+  const list = $('#cartList');
+  const total = $('#cartTotal');
+  if (!list || !total) return;
+  if (!items.length) {
+    list.innerHTML = '<p class="empty">장바구니에 담긴 콘텐츠가 없습니다.</p>';
+    total.innerHTML = '';
+    return;
+  }
+  list.innerHTML = items.map((asset) => `
+    <article class="cart-line">
+      ${assetMediaMarkup(asset, 'cart-line-media')}
+      <div>
+        <strong>${asset.title}</strong>
+        <span>${asset.author_name} · ${LICENSE_LABELS[asset.license] || asset.license}</span>
+        <b>${money(asset.price)}</b>
+      </div>
+      <button class="ghost-btn" type="button" data-remove-cart="${asset.id}">제외</button>
+    </article>
+  `).join('');
+  const sum = items.reduce((totalPrice, asset) => totalPrice + Number(asset.price || 0), 0);
+  total.innerHTML = `<span>총 ${items.length.toLocaleString('ko-KR')}개</span><strong>${money(sum)}</strong>`;
+  $$('[data-remove-cart]').forEach((button) => {
+    button.addEventListener('click', () => toggleCart(button.dataset.removeCart));
+  });
+}
+
+function openCartDialog() {
+  closeDialog('#uploadModal');
+  closeDialog('#assetModal');
+  renderCartDialog();
+  showDialog('#cartDialog');
 }
 
 function hasSupabaseConfig() {
@@ -439,6 +576,8 @@ function assetMeta(asset) {
 
 function assetCardMarkup(asset) {
   const canManage = canManageAsset(asset);
+  const isLiked = state.likedAssetIds.has(asset.id);
+  const isInCart = state.cartAssetIds.has(asset.id);
   return `
     <article class="asset-card" data-id="${asset.id}">
       ${canManage ? `
@@ -452,6 +591,16 @@ function assetCardMarkup(asset) {
       ` : ''}
       ${assetMediaMarkup(asset)}
       <div class="asset-body">
+        <div class="asset-actions">
+          <button class="like-btn ${isLiked ? 'active' : ''}" type="button" data-like-asset="${asset.id}" aria-pressed="${isLiked}">
+            <span aria-hidden="true">♥</span>
+            <strong>${assetLikeCount(asset).toLocaleString('ko-KR')}</strong>
+          </button>
+          <button class="cart-btn ${isInCart ? 'active' : ''}" type="button" data-cart-asset="${asset.id}" aria-pressed="${isInCart}">
+            <span aria-hidden="true">＋</span>
+            <strong>${isInCart ? '담김' : '담기'}</strong>
+          </button>
+        </div>
         <h3>${asset.title}</h3>
         <div class="asset-sub">${assetMeta(asset)}</div>
         <div class="asset-meta"><span>${asset.author_name}</span><span class="price">${money(asset.price)}</span></div>
@@ -559,18 +708,35 @@ function renderAssets() {
     });
   });
 
+  $$('[data-like-asset]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleLike(button.dataset.likeAsset);
+    });
+  });
+
+  $$('[data-cart-asset]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleCart(button.dataset.cartAsset);
+    });
+  });
+
   $$('#assetGrid .asset-card').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (event.target.closest('.card-menu')) return;
+      if (event.target.closest('.card-menu, .asset-actions')) return;
       openAsset(card.dataset.id);
     });
   });
+  renderCartControls();
 }
 
 function openAsset(id) {
   const asset = state.assets.find((item) => item.id === id);
   if (!asset) return;
   const canDelete = canManageAsset(asset);
+  closeDialog('#uploadModal');
+  closeDialog('#cartDialog');
   $('#modalPanel').innerHTML = `
     <div class="modal-grid">
       ${modalMediaMarkup(asset)}
@@ -592,7 +758,7 @@ function openAsset(id) {
       </div>
     </div>
   `;
-  $('#assetModal').showModal();
+  showDialog('#assetModal');
   $('#closeModalBtn').addEventListener('click', () => $('#assetModal').close());
   const deleteButton = $('#deleteAssetBtn');
   if (deleteButton) deleteButton.addEventListener('click', () => deleteAsset(asset));
@@ -618,6 +784,8 @@ function openEditAsset(asset) {
   if (!canManageAsset(asset)) return toast('수정 권한이 없습니다.');
   if (!state.client) return toast('수정은 로그인 연결 후 사용할 수 있습니다.');
 
+  closeDialog('#assetModal');
+  closeDialog('#cartDialog');
   setUploadMode('edit', asset);
   $('#workTitle').value = asset.title || '';
   $('#workCategory').value = asset.category || 'photo';
@@ -626,7 +794,7 @@ function openEditAsset(asset) {
   $('#workAuthor').value = asset.author_name || '';
   $('#workTags').value = (asset.tags || []).join(', ');
   $('#workDesc').value = asset.description || '';
-  $('#uploadModal').showModal();
+  showDialog('#uploadModal');
 }
 
 async function deleteAsset(asset) {
@@ -838,8 +1006,10 @@ function bindEvents() {
       toast('콘텐츠 등록은 로그인 후 사용할 수 있습니다.');
       return;
     }
+    closeDialog('#assetModal');
+    closeDialog('#cartDialog');
     resetUploadForm();
-    $('#uploadModal').showModal();
+    showDialog('#uploadModal');
   };
   $('#openUploadBtn').addEventListener('click', openUploadModal);
   const creatorUploadBtn = $('#creatorUploadBtn');
@@ -881,7 +1051,7 @@ function bindEvents() {
   });
   $('#uploadForm').addEventListener('submit', submitUpload);
   $('#uploadModal').addEventListener('click', (event) => {
-    if (event.target === $('#uploadModal')) {
+    if (event.target === $('#uploadModal') && !state.editingAssetId) {
       resetUploadForm();
       $('#uploadModal').close();
     }
@@ -893,6 +1063,7 @@ function bindEvents() {
 
 async function init() {
   enableSectionIndex();
+  loadUserActions();
   renderTags();
   renderCollections();
   renderCategoryChips();
