@@ -193,6 +193,46 @@ function saveSet(key, value) {
   localStorage.setItem(key, JSON.stringify([...value]));
 }
 
+function readCartItemSnapshots() {
+  try {
+    const value = JSON.parse(localStorage.getItem('artbus_cart_items') || '{}');
+    return value && typeof value === 'object' ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function assetSnapshot(asset) {
+  return {
+    id: asset.id,
+    title: asset.title,
+    author_name: asset.author_name,
+    license: asset.license,
+    price: asset.price,
+    media_url: asset.media_url,
+    media_type: asset.media_type,
+  };
+}
+
+function saveCartItemSnapshot(assetId) {
+  const asset = state.assets.find((item) => item.id === assetId);
+  if (!asset) return;
+  const snapshots = readCartItemSnapshots();
+  snapshots[asset.id] = assetSnapshot(asset);
+  localStorage.setItem('artbus_cart_items', JSON.stringify(snapshots));
+}
+
+function saveCartItemSnapshots() {
+  const snapshots = readCartItemSnapshots();
+  Object.keys(snapshots).forEach((id) => {
+    if (!state.cartAssetIds.has(id)) delete snapshots[id];
+  });
+  cartAssets().forEach((asset) => {
+    snapshots[asset.id] = assetSnapshot(asset);
+  });
+  localStorage.setItem('artbus_cart_items', JSON.stringify(snapshots));
+}
+
 function loadUserActions() {
   state.likedAssetIds = readSavedSet('artbus_liked_assets');
   state.cartAssetIds = readSavedSet('artbus_cart');
@@ -201,6 +241,33 @@ function loadUserActions() {
 function assetLikeCount(asset) {
   const baseCount = Math.max(0, Math.round(Number(asset.downloads || 0) / 18));
   return baseCount + (state.likedAssetIds.has(asset.id) ? 1 : 0);
+}
+
+function refreshAssetActionButtons(assetId) {
+  const asset = state.assets.find((item) => item.id === assetId);
+  if (!asset) return;
+  const isLiked = state.likedAssetIds.has(assetId);
+  const isInCart = state.cartAssetIds.has(assetId);
+  const card = document.querySelector(`.asset-card[data-id="${CSS.escape(assetId)}"]`);
+  if (card) {
+    card.classList.remove('action-pulse');
+    void card.offsetWidth;
+    card.classList.add('action-pulse');
+  }
+
+  $$(`[data-like-asset="${CSS.escape(assetId)}"]`).forEach((button) => {
+    button.classList.toggle('active', isLiked);
+    button.setAttribute('aria-pressed', String(isLiked));
+    const count = button.querySelector('strong');
+    if (count) count.textContent = assetLikeCount(asset).toLocaleString('ko-KR');
+  });
+
+  $$(`[data-cart-asset="${CSS.escape(assetId)}"]`).forEach((button) => {
+    button.classList.toggle('active', isInCart);
+    button.setAttribute('aria-pressed', String(isInCart));
+    const label = button.querySelector('strong');
+    if (label) label.textContent = isInCart ? '담김' : '담기';
+  });
 }
 
 function toggleLike(assetId) {
@@ -212,7 +279,7 @@ function toggleLike(assetId) {
     toast('좋아요에 추가했습니다.');
   }
   saveSet('artbus_liked_assets', state.likedAssetIds);
-  renderAssets();
+  refreshAssetActionButtons(assetId);
 }
 
 function toggleCart(assetId) {
@@ -221,10 +288,12 @@ function toggleCart(assetId) {
     toast('장바구니에서 제외했습니다.');
   } else {
     state.cartAssetIds.add(assetId);
+    saveCartItemSnapshot(assetId);
     toast('장바구니에 담았습니다.');
   }
   saveSet('artbus_cart', state.cartAssetIds);
-  renderAssets();
+  saveCartItemSnapshots();
+  refreshAssetActionButtons(assetId);
   renderCartControls();
 }
 
@@ -232,9 +301,21 @@ function cartAssets() {
   return state.assets.filter((asset) => state.cartAssetIds.has(asset.id));
 }
 
+function pruneCartItems() {
+  const availableIds = new Set(state.assets.map((asset) => asset.id));
+  const nextIds = new Set([...state.cartAssetIds].filter((id) => availableIds.has(id)));
+  if (nextIds.size !== state.cartAssetIds.size) {
+    state.cartAssetIds = nextIds;
+    saveSet('artbus_cart', state.cartAssetIds);
+  }
+  saveCartItemSnapshots();
+}
+
 function renderCartControls() {
   let button = $('#cartFloatingBtn');
   let dialog = $('#cartDialog');
+  pruneCartItems();
+  const items = cartAssets();
   if (!button) {
     document.body.insertAdjacentHTML('beforeend', `
       <button class="cart-floating-btn" id="cartFloatingBtn" type="button" aria-label="장바구니 열기">
@@ -251,6 +332,7 @@ function renderCartControls() {
           </div>
           <div class="cart-list" id="cartList"></div>
           <div class="cart-total" id="cartTotal"></div>
+          <div class="cart-dialog-actions" id="cartDialogActions"></div>
         </div>
       </dialog>
     `);
@@ -263,8 +345,8 @@ function renderCartControls() {
     });
   }
 
-  $('#cartFloatingCount').textContent = state.cartAssetIds.size.toLocaleString('ko-KR');
-  button.classList.toggle('has-items', state.cartAssetIds.size > 0);
+  $('#cartFloatingCount').textContent = items.length.toLocaleString('ko-KR');
+  button.classList.toggle('has-items', items.length > 0);
   renderCartDialog();
 }
 
@@ -272,14 +354,16 @@ function renderCartDialog() {
   const items = cartAssets();
   const list = $('#cartList');
   const total = $('#cartTotal');
-  if (!list || !total) return;
+  const actions = $('#cartDialogActions');
+  if (!list || !total || !actions) return;
   if (!items.length) {
     list.innerHTML = '<p class="empty">장바구니에 담긴 콘텐츠가 없습니다.</p>';
     total.innerHTML = '';
+    actions.innerHTML = '';
     return;
   }
   list.innerHTML = items.map((asset) => `
-    <article class="cart-line">
+    <article class="cart-line" data-cart-open="${asset.id}">
       ${assetMediaMarkup(asset, 'cart-line-media')}
       <div>
         <strong>${asset.title}</strong>
@@ -291,9 +375,25 @@ function renderCartDialog() {
   `).join('');
   const sum = items.reduce((totalPrice, asset) => totalPrice + Number(asset.price || 0), 0);
   total.innerHTML = `<span>총 ${items.length.toLocaleString('ko-KR')}개</span><strong>${money(sum)}</strong>`;
-  $$('[data-remove-cart]').forEach((button) => {
-    button.addEventListener('click', () => toggleCart(button.dataset.removeCart));
+  actions.innerHTML = `
+    <button class="ghost-btn" id="clearCartBtn" type="button">전체 비우기</button>
+    <button class="solid-btn" id="cartPurchaseBtn" type="button">전체 구매</button>
+  `;
+  $$('[data-cart-open]').forEach((line) => {
+    line.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      closeDialog('#cartDialog');
+      openAsset(line.dataset.cartOpen);
+    });
   });
+  $$('[data-remove-cart]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleCart(button.dataset.removeCart);
+    });
+  });
+  $('#clearCartBtn').addEventListener('click', clearCart);
+  $('#cartPurchaseBtn').addEventListener('click', openCheckoutDialog);
 }
 
 function openCartDialog() {
@@ -301,6 +401,112 @@ function openCartDialog() {
   closeDialog('#assetModal');
   renderCartDialog();
   showDialog('#cartDialog');
+}
+
+function openCartFromLinkIfNeeded() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('cart') !== 'open') return;
+  scrollToMarket();
+  window.setTimeout(openCartDialog, 350);
+}
+
+function clearCart() {
+  if (!state.cartAssetIds.size) return;
+  state.cartAssetIds.clear();
+  saveSet('artbus_cart', state.cartAssetIds);
+  saveCartItemSnapshots();
+  renderAssets();
+  renderCartControls();
+  toast('장바구니를 비웠습니다.');
+}
+
+function renderCheckoutControls() {
+  if ($('#checkoutDialog')) return;
+  document.body.insertAdjacentHTML('beforeend', `
+    <dialog class="checkout-dialog" id="checkoutDialog">
+      <form class="checkout-panel" id="checkoutForm">
+        <div class="checkout-head">
+          <div>
+            <p class="eyebrow">Checkout</p>
+            <h2>전체 구매</h2>
+          </div>
+          <button class="ghost-btn" id="closeCheckoutBtn" type="button">닫기</button>
+        </div>
+        <div class="checkout-layout">
+          <section class="checkout-summary">
+            <h3>주문 콘텐츠</h3>
+            <div class="checkout-items" id="checkoutItems"></div>
+            <div class="checkout-price">
+              <span>총 결제 예정 금액</span>
+              <strong id="checkoutTotal">0원</strong>
+            </div>
+          </section>
+          <section class="checkout-fields">
+            <label>구매자명<input id="buyerName" required placeholder="홍길동"></label>
+            <label>이메일<input id="buyerEmail" type="email" required placeholder="name@example.com"></label>
+            <label>사용 목적<textarea id="buyerPurpose" rows="3" placeholder="예: 브랜드 광고, 상세페이지, SNS 캠페인"></textarea></label>
+            <label>결제수단
+              <select id="paymentMethod">
+                <option value="card">신용카드</option>
+                <option value="transfer">계좌이체</option>
+                <option value="invoice">세금계산서 요청</option>
+              </select>
+            </label>
+            <label class="checkout-agree">
+              <input id="checkoutAgree" type="checkbox" required>
+              <span>이용약관, 개인정보처리방침, 환불정책을 확인했습니다.</span>
+            </label>
+          </section>
+        </div>
+        <button class="solid-btn full" type="submit">결제 준비</button>
+        <p class="form-note">현재는 결제 UI 단계입니다. 실제 결제 연동 시 이 버튼이 결제창으로 연결됩니다.</p>
+      </form>
+    </dialog>
+  `);
+  $('#closeCheckoutBtn').addEventListener('click', () => closeDialog('#checkoutDialog'));
+  $('#checkoutDialog').addEventListener('click', (event) => {
+    if (event.target === $('#checkoutDialog')) closeDialog('#checkoutDialog');
+  });
+  $('#checkoutForm').addEventListener('submit', submitCheckout);
+}
+
+function openCheckoutDialog() {
+  const items = cartAssets();
+  if (!items.length) return toast('장바구니가 비어 있습니다.');
+  renderCheckoutControls();
+  closeDialog('#cartDialog');
+  closeDialog('#assetModal');
+  const sum = items.reduce((totalPrice, asset) => totalPrice + Number(asset.price || 0), 0);
+  $('#checkoutItems').innerHTML = items.map((asset) => `
+    <article class="checkout-item">
+      ${assetMediaMarkup(asset, 'checkout-item-media')}
+      <div>
+        <strong>${asset.title}</strong>
+        <span>${asset.author_name} · ${LICENSE_LABELS[asset.license] || asset.license}</span>
+      </div>
+      <b>${money(asset.price)}</b>
+    </article>
+  `).join('');
+  $('#checkoutTotal').textContent = money(sum);
+  $('#buyerEmail').value = state.user?.email || '';
+  showDialog('#checkoutDialog');
+}
+
+function submitCheckout(event) {
+  event.preventDefault();
+  toast('결제창 연결은 준비 중입니다. 현재는 구매 UI만 제공됩니다.');
+}
+
+function renderScrollTopButton() {
+  if ($('#scrollTopBtn')) return;
+  document.body.insertAdjacentHTML('beforeend', `
+    <button class="scroll-top-btn" id="scrollTopBtn" type="button" aria-label="맨 위로 이동">↑</button>
+  `);
+  const button = $('#scrollTopBtn');
+  const sync = () => button.classList.toggle('show', window.scrollY > 420);
+  button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  window.addEventListener('scroll', sync, { passive: true });
+  sync();
 }
 
 function hasSupabaseConfig() {
@@ -503,6 +709,36 @@ function filteredAssets() {
   return list;
 }
 
+function scrollToMarket() {
+  $('#market')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function applyCategory(category, shouldScroll = false) {
+  state.category = category || 'all';
+  state.expandedGroups.clear();
+  const heroCategory = $('#heroCategory');
+  if (heroCategory) heroCategory.value = state.category;
+  renderCategoryChips();
+  renderAssets();
+  if (shouldScroll) scrollToMarket();
+}
+
+function resetFilters(shouldScroll = false) {
+  state.query = '';
+  state.category = 'all';
+  state.license = 'all';
+  state.sort = 'newest';
+  state.expandedGroups.clear();
+  $('#searchInput').value = '';
+  $('#heroSearch').value = '';
+  $('#heroCategory').value = 'all';
+  $('#licenseFilter').value = 'all';
+  $('#sortSelect').value = 'newest';
+  renderCategoryChips();
+  renderAssets();
+  if (shouldScroll) scrollToMarket();
+}
+
 function renderTags() {
   $('#quickTags').innerHTML = QUICK_TAGS.map((tag) => `<button class="tag" type="button" data-query="${tag}">${tag}</button>`).join('');
   $$('#quickTags .tag').forEach((button) => {
@@ -511,7 +747,7 @@ function renderTags() {
       $('#searchInput').value = state.query;
       $('#heroSearch').value = state.query;
       renderAssets();
-      location.hash = '#market';
+      scrollToMarket();
     });
   });
 }
@@ -530,9 +766,7 @@ function renderCategoryChips() {
   `).join('');
   $$('#categoryChips .chip').forEach((chip) => {
     chip.addEventListener('click', () => {
-      state.category = chip.dataset.category;
-      renderCategoryChips();
-      renderAssets();
+      applyCategory(chip.dataset.category, true);
     });
   });
 }
@@ -612,7 +846,7 @@ function assetCardMarkup(asset) {
 
 function categoryGroupMarkup(group) {
   const isExpanded = state.expandedGroups.has(group.key);
-  const visibleAssets = isExpanded ? group.assets : group.assets.slice(0, 12);
+  const visibleAssets = isExpanded ? group.assets : group.assets.slice(0, 6);
   const hasMore = group.assets.length > visibleAssets.length;
   return `
     <section class="market-category" data-group="${group.key}">
@@ -624,7 +858,7 @@ function categoryGroupMarkup(group) {
         <span>${group.assets.length.toLocaleString('ko-KR')}개</span>
       </div>
       <div class="category-asset-grid">${visibleAssets.map(assetCardMarkup).join('')}</div>
-      ${hasMore ? `<button class="text-more-btn" type="button" data-expand-group="${group.key}">더보기</button>` : ''}
+      ${hasMore ? `<button class="text-more-btn" type="button" data-expand-group="${group.key}">&#45908;&#48372;&#44592;</button>` : ''}
     </section>
   `;
 }
@@ -955,9 +1189,7 @@ function bindEvents() {
     state.query = $('#heroSearch').value;
     state.category = $('#heroCategory').value;
     $('#searchInput').value = state.query;
-    renderCategoryChips();
-    renderAssets();
-    location.hash = '#market';
+    applyCategory(state.category, true);
   });
 
   $('#searchInput').addEventListener('input', (event) => {
@@ -976,27 +1208,12 @@ function bindEvents() {
   });
 
   $('#resetFiltersBtn').addEventListener('click', () => {
-    state.query = '';
-    state.category = 'all';
-    state.license = 'all';
-    state.sort = 'newest';
-    state.expandedGroups.clear();
-    $('#searchInput').value = '';
-    $('#heroSearch').value = '';
-    $('#heroCategory').value = 'all';
-    $('#licenseFilter').value = 'all';
-    $('#sortSelect').value = 'newest';
-    renderCategoryChips();
-    renderAssets();
+    resetFilters(true);
   });
 
   $$('[data-jump-category]').forEach((button) => {
     button.addEventListener('click', () => {
-      state.category = button.dataset.jumpCategory;
-      $('#heroCategory').value = state.category;
-      renderCategoryChips();
-      renderAssets();
-      location.hash = '#market';
+      applyCategory(button.dataset.jumpCategory, true);
     });
   });
 
@@ -1064,6 +1281,8 @@ function bindEvents() {
 async function init() {
   enableSectionIndex();
   loadUserActions();
+  renderScrollTopButton();
+  renderCheckoutControls();
   renderTags();
   renderCollections();
   renderCategoryChips();
@@ -1072,6 +1291,7 @@ async function init() {
   setupRevealAnimations();
   await connectSupabase();
   renderAssets();
+  openCartFromLinkIfNeeded();
 }
 
 document.addEventListener('DOMContentLoaded', init);

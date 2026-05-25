@@ -5,17 +5,27 @@ const state = {
   client: null,
   user: null,
   works: [],
+  cartCatalogIds: new Set(),
+  cartCatalog: [],
 };
 
 const $ = (selector) => document.querySelector(selector);
 let revealObserver = null;
+const CATEGORY_LABELS = {
+  photo: '사진',
+  video: '영상',
+  illustration: '일러스트',
+  painting: '파인아트',
+  ai_image: 'AI 이미지',
+  ai_video: 'AI 영상',
+};
 
 function setupRevealAnimations(root = document) {
   const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const targets = root.querySelectorAll('h1, h2, h3, .eyebrow, .mypage-hero p, .mypage-login, .profile-panel, .stats-grid article, .my-work-card, .site-footer > *');
+  const targets = root.querySelectorAll('h1, h2, h3, .eyebrow, .mypage-hero p, .mypage-login, .profile-panel, .stats-grid article, .dashboard-insights article, .mypage-cart-panel, .my-work-card, .site-footer > *');
   targets.forEach((el, index) => {
     if (el.classList.contains('reveal-text') || el.classList.contains('reveal-item')) return;
-    el.classList.add(el.matches('.mypage-login, .profile-panel, .stats-grid article, .my-work-card') ? 'reveal-item' : 'reveal-text');
+    el.classList.add(el.matches('.mypage-login, .profile-panel, .stats-grid article, .dashboard-insights article, .mypage-cart-panel, .my-work-card') ? 'reveal-item' : 'reveal-text');
     el.style.setProperty('--reveal-delay', `${Math.min(index % 8, 7) * 45}ms`);
     if (motionReduced) el.classList.add('is-visible');
   });
@@ -78,6 +88,48 @@ function mediaMarkup(work) {
   return `<div style="background-image:url('${work.media_url}')"></div>`;
 }
 
+function readSavedSet(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return new Set(Array.isArray(value) ? value : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSet(key, value) {
+  localStorage.setItem(key, JSON.stringify([...value]));
+}
+
+function readCartSnapshots() {
+  try {
+    const value = JSON.parse(localStorage.getItem('artbus_cart_items') || '{}');
+    return value && typeof value === 'object' ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function validCartIds(cartIds = readSavedSet('artbus_cart')) {
+  const snapshots = readCartSnapshots();
+  const validIds = new Set([...Object.keys(snapshots), ...state.cartCatalogIds]);
+  if (!validIds.size) return cartIds;
+  const nextIds = new Set([...cartIds].filter((id) => validIds.has(id)));
+  if (nextIds.size !== cartIds.size) saveSet('artbus_cart', nextIds);
+  return nextIds;
+}
+
+function cartSnapshotItems(cartIds = validCartIds()) {
+  const snapshots = readCartSnapshots();
+  const catalogById = new Map(state.cartCatalog.map((work) => [work.id, work]));
+  return [...cartIds].map((id) => catalogById.get(id) || snapshots[id]).filter(Boolean);
+}
+
+function formatDate(value) {
+  if (!value) return '-';
+  return new Date(value).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
+
 function renderAccount() {
   const loggedIn = Boolean(state.user);
   $('#loginPrompt').hidden = loggedIn;
@@ -96,10 +148,113 @@ function renderStats() {
   const imageCount = state.works.filter((work) => work.media_type !== 'video').length;
   const videoCount = state.works.filter((work) => work.media_type === 'video').length;
   const totalPrice = state.works.reduce((sum, work) => sum + Number(work.price || 0), 0);
+  const averagePrice = state.works.length ? Math.round(totalPrice / state.works.length) : 0;
+  const latest = state.works[0];
+  const likedIds = readSavedSet('artbus_liked_assets');
+  const cartIds = validCartIds();
+  const likedOwnCount = state.works.filter((work) => likedIds.has(work.id)).length;
+  const cartOwnCount = state.works.filter((work) => cartIds.has(work.id)).length;
+  const categoryCounts = state.works.reduce((counts, work) => {
+    const key = work.category || (work.media_type === 'video' ? 'video' : 'photo');
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+  const topCategoryEntry = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+
   $('#totalCount').textContent = state.works.length.toLocaleString('ko-KR');
   $('#imageCount').textContent = imageCount.toLocaleString('ko-KR');
   $('#videoCount').textContent = videoCount.toLocaleString('ko-KR');
   $('#totalPrice').textContent = money(totalPrice);
+  $('#latestUploadDate').textContent = formatDate(latest?.created_at);
+  $('#latestUploadTitle').textContent = latest?.title || '등록된 콘텐츠가 없습니다.';
+  $('#topCategory').textContent = topCategoryEntry ? (CATEGORY_LABELS[topCategoryEntry[0]] || topCategoryEntry[0]) : '-';
+  $('#topCategoryMeta').textContent = topCategoryEntry ? `${topCategoryEntry[1].toLocaleString('ko-KR')}개 콘텐츠` : '콘텐츠를 올리면 자동 집계됩니다.';
+  $('#averagePrice').textContent = money(averagePrice);
+  $('#savedActionCount').textContent = (likedOwnCount + cartOwnCount).toLocaleString('ko-KR');
+  $('#savedActionMeta').textContent = `좋아요 ${likedOwnCount.toLocaleString('ko-KR')}개 · 장바구니 ${cartOwnCount.toLocaleString('ko-KR')}개`;
+  renderCartSummary(cartIds);
+}
+
+function renderCartSummary(cartIds = validCartIds()) {
+  const el = $('#mypageCartSummary');
+  if (!el) return;
+  const count = cartIds.size;
+  el.textContent = count
+    ? `현재 ${count.toLocaleString('ko-KR')}개 콘텐츠가 장바구니에 담겨 있습니다.`
+    : '담긴 콘텐츠가 없습니다.';
+}
+
+function cartItemMedia(work) {
+  if (!work?.media_url) return '<div class="mypage-cart-thumb placeholder">A</div>';
+  if (work.media_type === 'video') {
+    return `<div class="mypage-cart-thumb"><video src="${work.media_url}" muted playsinline preload="metadata"></video></div>`;
+  }
+  return `<div class="mypage-cart-thumb" style="background-image:url('${work.media_url}')"></div>`;
+}
+
+function renderMypageCartDialog() {
+  const cartIds = validCartIds();
+  const list = $('#mypageCartList');
+  const total = $('#mypageCartTotal');
+  const actions = $('#mypageCartActions');
+  if (!list || !total || !actions) return;
+
+  const snapshots = readCartSnapshots();
+  const items = cartSnapshotItems(cartIds);
+  if (!items.length) {
+    list.innerHTML = '<p class="empty">장바구니에 담긴 콘텐츠가 없습니다.</p>';
+    total.innerHTML = '';
+    actions.innerHTML = '';
+    return;
+  }
+
+  list.innerHTML = items.map((item) => `
+    <article class="mypage-cart-line">
+      ${cartItemMedia(item)}
+      <div>
+        <strong>${item.title}</strong>
+        <span>${item.author_name || 'ArtBus'} · ${item.license || 'standard'}</span>
+        <b>${money(item.price)}</b>
+      </div>
+    </article>
+  `).join('');
+
+  const sum = items.reduce((acc, item) => acc + Number(item.price || 0), 0);
+  total.innerHTML = `<span>총 ${items.length.toLocaleString('ko-KR')}개</span><strong>${money(sum)}</strong>`;
+  actions.innerHTML = `
+    <button class="ghost-btn" id="clearMypageCartBtn" type="button">전체 비우기</button>
+    <button class="solid-btn" id="buyMypageCartBtn" type="button">전체 구매</button>
+  `;
+  $('#clearMypageCartBtn').addEventListener('click', clearMypageCart);
+  $('#buyMypageCartBtn').addEventListener('click', () => toast('결제창 연결은 준비 중입니다. 현재는 구매 UI만 제공됩니다.'));
+}
+
+function openMypageCartDialog() {
+  renderMypageCartDialog();
+  $('#mypageCartDialog').showModal();
+}
+
+function clearMypageCart() {
+  saveSet('artbus_cart', new Set());
+  localStorage.setItem('artbus_cart_items', '{}');
+  renderCartSummary(new Set());
+  renderMypageCartDialog();
+  toast('장바구니를 비웠습니다.');
+}
+
+async function loadCartCatalog() {
+  if (!state.client) return;
+  const { data, error } = await state.client
+    .from('works')
+    .select('id,title,author_name,license,price,media_url,media_type');
+
+  if (error) {
+    console.warn('Cart catalog load failed:', error.message);
+    return;
+  }
+
+  state.cartCatalog = data || [];
+  state.cartCatalogIds = new Set(state.cartCatalog.map((work) => work.id));
 }
 
 function renderWorks() {
@@ -124,6 +279,7 @@ function renderWorks() {
 
 async function loadWorks() {
   if (!state.user || !state.client) return;
+  await loadCartCatalog();
   const { data, error } = await state.client
     .from('works')
     .select('*')
@@ -193,6 +349,11 @@ async function init() {
   });
 
   $('#refreshBtn').addEventListener('click', loadWorks);
+  $('#openMypageCartBtn').addEventListener('click', openMypageCartDialog);
+  $('#closeMypageCartBtn').addEventListener('click', () => $('#mypageCartDialog').close());
+  $('#mypageCartDialog').addEventListener('click', (event) => {
+    if (event.target === $('#mypageCartDialog')) $('#mypageCartDialog').close();
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
